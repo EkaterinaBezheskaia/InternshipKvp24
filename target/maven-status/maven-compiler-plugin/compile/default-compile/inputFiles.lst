@@ -1,0 +1,7 @@
+D:\Testing\CaseLabTestTask\TestTask\src\main\java\com\example\testtask\api\controllers\FileController.java
+D:\Testing\CaseLabTestTask\TestTask\src\main\java\com\example\testtask\api\dto\FileDto.java
+D:\Testing\CaseLabTestTask\TestTask\src\main\java\com\example\testtask\api\exceptions\BadRequestException.java
+D:\Testing\CaseLabTestTask\TestTask\src\main\java\com\example\testtask\api\factories\FileDtoFactory.java
+D:\Testing\CaseLabTestTask\TestTask\src\main\java\com\example\testtask\store\entities\FileEntity.java
+D:\Testing\CaseLabTestTask\TestTask\src\main\java\com\example\testtask\store\repositories\FileRepository.java
+D:\Testing\CaseLabTestTask\TestTask\src\main\java\com\example\testtask\TestTaskApplication.java

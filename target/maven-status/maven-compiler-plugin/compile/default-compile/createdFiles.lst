@@ -1,0 +1,9 @@
+com\example\testtask\store\entities\FileEntity.class
+com\example\testtask\api\exceptions\BadRequestException.class
+com\example\testtask\api\dto\FileDto$FileDtoBuilder.class
+com\example\testtask\api\dto\FileDto.class
+com\example\testtask\api\factories\FileDtoFactory.class
+com\example\testtask\TestTaskApplication.class
+com\example\testtask\store\entities\FileEntity$FileEntityBuilder.class
+com\example\testtask\store\repositories\FileRepository.class
+com\example\testtask\api\controllers\FileController.class
