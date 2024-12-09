@@ -22,7 +22,7 @@ public class MeterReadingsDTO {
 
     @NonNull
     @JsonProperty
-    Instant startTime;
+    Instant createdAt;
 
     @NonNull
     Long readings;

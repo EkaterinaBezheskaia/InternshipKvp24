@@ -22,7 +22,7 @@ public class MetersDTO {
 
     @NonNull
     @JsonProperty
-    Instant startTime;
+    Instant createdAt;
 
     @NonNull
     String description;
