@@ -22,7 +22,7 @@ public class HandbookAddressesEntity extends HandbookAddressesDTO {
     private Long id;
 
     @Column //(unique = true)
-    private String titleAdress;
+    private String titleAddress;
 
     @Builder.Default
     private String literal = "";
