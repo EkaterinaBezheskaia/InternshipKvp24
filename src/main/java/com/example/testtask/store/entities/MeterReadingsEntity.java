@@ -20,8 +20,8 @@ public class MeterReadingsEntity extends MeterReadingsDTO {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
-    private String titleMetersNumber;
+//    @Column(unique = true)
+//    private String titleMetersNumber;
 
 //        @Builder.Default
 //        String base64File = "";
@@ -30,7 +30,7 @@ public class MeterReadingsEntity extends MeterReadingsDTO {
     Instant creationDate = Instant.now();
 
     @Builder.Default
-    private String description = "";
+    private Long readings;
 
     @ManyToOne
     @JoinColumn(name = "meter_id")
