@@ -10,10 +10,10 @@ import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.*;
@@ -21,29 +21,27 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.springframework.boot.autoconfigure.container.ContainerImageMetadata.isPresent;
-import static org.springframework.data.repository.util.ClassUtils.ifPresent;
-
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Transactional
 @RestController
-@Component
-@Repository
+//@Component
+//@Repository
 
+//TO DO: Сделать валидацию для обработки ожидаемых форматов данных с помощью библиотеки javax.validation
 
 public class HandbookAddressesController {
 
-    HandbookAddressesRepository handbookAddressesRepository;
 
+    HandbookAddressesRepository handbookAddressesRepository;
     HandbookAddressesDTOFactory handbookAddressesDTOFactory;
 
     public static final String CREATE_ADDRESS = "/api/addresses";
-    public static final String EDIT_ADDRESS = "/api/addresses/{titleAddress}";
-    public static final String UPDATE_ADDRESS = "/api/addresses/{id}";
+    public static final String EDIT_ADDRESS = "/api/addresses/{titleAddress}/{literal}";
     public static final String GET_ALL_ADDRESSES = "/api/addresses";
-    public static final String GET_ADDRESS = "/{titleAddress}";
-    public static final String DELETE_ADDRESS = "/api/addresses/{titleAddress}";
+    public static final String GET_ADDRESS = "/{titleAddress}/{literal}";
+    public static final String GET_STREETS = "/api/streets";
+    public static final String DELETE_ADDRESS = "/api/addresses/{titleAddress}/{literal}";
 
     @PostMapping(CREATE_ADDRESS)
     public HandbookAddressesDTO createAddress(
@@ -108,31 +106,94 @@ public class HandbookAddressesController {
         return handbookAddressesDTOFactory.makeHandbookAddressesDTO(handbookAddresses);
     }
 
-}
 
+    @GetMapping(HandbookAddressesController.GET_ADDRESS)
+    public HandbookAddressesDTO getTitleAddressAndLiteral(
+            @PathVariable("titleAddress") String titleAddress,
+            @PathVariable("literal") String literal) {
 
-/*    @GetMapping(GET_ADDRESS)
-    public HandbookAddressesDTO getTitleAddress(
-            @PathVariable String titleAddress) throws BadRequestException {
+        HandbookAddressesEntity handbookAddresses = handbookAddressesRepository
+                .findByTitleAddressAndLiteral(titleAddress, literal)
+                .orElseThrow(() ->
+                        new NotFoundException2(
+                                String.format(
+                                        "Address with \"%s\" with literal \"%s\" does not exist.",
+                                        titleAddress, literal
+                                )
+                        )
+                );
 
-        return handbookAddressesRepository.findByTitleAddress(titleAddress)
-                .orElseThrow(() -> new BadRequestException("File not found"));
+        System.out.println("Found Address: " + handbookAddresses.getTitleAddress());
+
+        return handbookAddressesDTOFactory.makeHandbookAddressesDTO(handbookAddresses);
+
+    }
+
+    @GetMapping(HandbookAddressesController.GET_STREETS)
+    public List<HandbookAddressesDTO> getStreets(
+            @PathVariable("titleAddress") String titleAddress,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "literal") String sortBy) {
+
+        HandbookAddressesEntity handbookAddresses = handbookAddressesRepository
+                .findByTitleAddress(titleAddress)
+                .orElseThrow(() ->
+                        new NotFoundException2(
+                                String.format(
+                                        "Address with \"%s\" with literal \"%s\" does not exist.",
+                                        titleAddress
+                                )
+                        )
+                );
+
+        List<HandbookAddressesEntity> addresses = handbookAddressesRepository
+                .findByTitleAddressOrderByLiteralAsc(PageRequest.of(page, size, Sort.by(sortBy).descending()));
+
+        return addresses.stream()
+                .map(handbookAddressesDTOFactory::makeHandbookAddressesDTO)
+                .collect(Collectors.toList());
+
     }
 
     @GetMapping(GET_ALL_ADDRESSES)
-    public List<HandbookAddressesDTO> getAllFiles(
+    public List<HandbookAddressesDTO> getAllAddresses(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "creationDate") String sortBy) {
+            @RequestParam(defaultValue = "titleAddress") String sortBy) {
 
-        Page<HandbookAddressesEntity> filesPage = handbookAddressesRepository.findAll(PageRequest.of(page, size, Sort.by(sortBy).descending()));
+        Page<HandbookAddressesEntity> allAddresses = handbookAddressesRepository
+                .findAll(PageRequest.of(page, size, Sort.by(sortBy).descending()));
 
-        return filesPage.stream()
+        return allAddresses.stream()
                 .map(handbookAddressesDTOFactory::makeHandbookAddressesDTO)
                 .collect(Collectors.toList());
     }
 
- */
+    @DeleteMapping(DELETE_ADDRESS)
+    public ResponseEntity<HandbookAddressesDTO> deleteAddress(
+            @PathVariable("titleAddress") String titleAddress,
+            @PathVariable("literal") String literal) {
+
+        HandbookAddressesEntity handbookAddresses = handbookAddressesRepository
+                .findByTitleAddressAndLiteral(titleAddress, literal)
+                .orElseThrow(() ->
+                        new NotFoundException2(
+                                String.format(
+                                        "Address with \"%s\" with literal \"%s\" does not exist.",
+                                        titleAddress, literal
+                                )
+                        )
+                );
+
+        handbookAddressesRepository.delete(handbookAddresses);
+
+        System.out.println("Deleted Address: " + handbookAddresses.getTitleAddress());
+
+        return ResponseEntity.noContent().build();
+    }
+
+}
 
 
 
