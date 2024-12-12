@@ -10,11 +10,12 @@ import java.util.Optional;
 
 public interface HandbookAddressesRepository extends JpaRepository<HandbookAddressesEntity, Long> {
 
-    @Override
+//    @Override
     @NonNull
-    Optional<HandbookAddressesEntity> findById(Long id);
+    Optional<HandbookAddressesEntity> findByTitleAddress(String titleAddress);
 
     @NonNull
     Page<HandbookAddressesEntity> findAll(Pageable pageable);
 
+    Optional<HandbookAddressesEntity> findByTitleAddressAndLiteral(String titleAddress, String literal);
 }
