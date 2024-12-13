@@ -24,18 +24,18 @@ public class MetersEntity extends MetersDTO {
     @Column(unique = true)
     private String titleMetersNumber;
 
-    @Column(name = "installation_date")
+    @Column //(name = "installation_date")
     private LocalDate installationDate;
 
     @Builder.Default
     Instant creationDate = Instant.now();
 
     @ManyToOne
-    @JoinColumn(name = "address_id")
+    @JoinColumn //(name = "address_id")
     private HandbookAddressesEntity address;
 
     @ManyToOne
-    @JoinColumn(name = "type_id")
+    @JoinColumn //(name = "type_id")
     private HandbookTypeMetersEntity type;
 
     @OneToMany(mappedBy = "meter")

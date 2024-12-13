@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Data
 @Builder(builderMethodName = "fileDtoBuilder")
@@ -21,10 +22,10 @@ public class MetersDTO {
     String titleMetersNumber;
 
     @NonNull
-    @JsonProperty
-    Instant createdAt;
+    LocalDate installationDate;
 
     @NonNull
-    String description;
+    @JsonProperty
+    Instant creationDate;
 
 }

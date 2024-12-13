@@ -17,4 +17,6 @@ public interface MetersRepository extends JpaRepository<MetersEntity, Long> {
     @NonNull
     Page<MetersEntity> findAll(Pageable pageable);
 
+    Optional<MetersEntity> findByTitleMetersNumber(String titleMetersNumber);
+
 }

@@ -1,73 +1,132 @@
 package com.example.testtask.api.controllers;
 
+import com.example.testtask.api.dto.MetersDTO;
+import com.example.testtask.api.exceptions.BadRequestException2;
+import com.example.testtask.api.exceptions.NotFoundException2;
+import com.example.testtask.api.factories.MetersDTOFactory;
+import com.example.testtask.store.entities.MetersEntity;
+import com.example.testtask.store.repositories.MetersRepository;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.apache.coyote.BadRequestException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Repository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Transactional
 @RestController
-@Component
-@Repository
+
+//TO DO: Сделать валидацию для обработки ожидаемых форматов данных с помощью библиотеки javax.validation
+
 public class MetersController {
 
-    FileRepository fileRepository;
+    MetersRepository metersRepository;
+    MetersDTOFactory metersDTOFactory;
 
-    FileDtoFactory fileDtoFactory;
+    public static final String CREATE_METERS = "/api/meters";
+    public static final String EDIT_METERS = "/api/meters/{titleMetersNumber}";
+    public static final String GET_METERS = "/api/meters/{titleMetersNumber}";
+    public static final String DELETE_METERS = "/api/meters/{titleMetersNumber}";
 
-    public static final String GET_ALL_FILES = "/api/files";
-    public static final String GET_FILE = "/{id}";
-    public static final String CREATE_FILE = "/api/files/{id}";
+    @PostMapping(CREATE_METERS)
+    public MetersDTO createMetersNumber(
+            @RequestParam String titleMetersNumber) {
 
+        metersRepository
+                .findByTitleMetersNumber(titleMetersNumber)
+                .ifPresent(meters -> {
+                    throw new BadRequestException2(
+                            String.format(
+                                    "Meter: \"%s\" already exists.",
+                                    titleMetersNumber
+                            )
+                    );
+                });
 
-    @PostMapping(CREATE_FILE)
-    public Long createFile(
-            @RequestBody FileDto fileDto) throws BadRequestException {
-        if (fileDto.getBase64File().isEmpty()) {
-            throw new BadRequestException("File content can't be empty.");
-        }
+        MetersEntity meters = metersRepository.saveAndFlush(
+                MetersEntity.builder()
+                        .titleMetersNumber(titleMetersNumber)
+                        .build()
+        );
 
-        FileEntity fileEntity = FileEntity.builder()
-                .title(fileDto.getTitle())
-                .creationDate(fileDto.getCreationDate())
-                .description(fileDto.getDescription())
-                .base64File(fileDto.getBase64File())
-                .build();
-
-        FileEntity savedFile = fileRepository.saveAndFlush(fileEntity);
-        return savedFile.getId();
+        return metersDTOFactory.makeMetersDTO(meters);
     }
 
-    @GetMapping(GET_FILE)
-    public FileDto getFile(
-            @PathVariable Long id) throws BadRequestException {
+    @PatchMapping(EDIT_METERS)
+    public MetersDTO editMeter(
+            @PathVariable("titleMetersNumber") String titleMetersNumber,
+            @RequestParam String newTitleMetersNumber) {
 
-        return fileRepository.findById(id)
-                .orElseThrow(() -> new BadRequestException("File not found"));
+        MetersEntity meters = metersRepository
+                .findByTitleMetersNumber(titleMetersNumber)
+                .orElseThrow(() ->
+                        new NotFoundException2(
+                                String.format(
+                                        "Meter: \"%s\" does not exist.",
+                                        titleMetersNumber
+                                )
+                        )
+                );
+
+        metersRepository
+                .findByTitleMetersNumber(newTitleMetersNumber)
+                .ifPresent(existingMeters -> {
+                    throw new BadRequestException2(
+                            String.format(
+                                    "Meter: \"%s\" already exists.",
+                                    titleMetersNumber
+                            )
+                    );
+                });
+
+        meters.setTitleMetersNumber(newTitleMetersNumber);
+
+        meters = metersRepository.saveAndFlush(meters);
+
+        return metersDTOFactory.makeMetersDTO(meters);
     }
 
-    @GetMapping(GET_ALL_FILES)
-    public List<FileDto> getAllFiles(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "creationDate") String sortBy) {
+    @GetMapping(GET_METERS)
+    public MetersDTO getTitleMeters(
+            @PathVariable("titleMetersNumber") String titleMetersNumber) {
 
-        Page<FileEntity> filesPage = fileRepository.findAll(PageRequest.of(page, size, Sort.by(sortBy).descending()));
+        MetersEntity meters = metersRepository
+                .findByTitleMetersNumber(titleMetersNumber)
+                .orElseThrow(() ->
+                        new NotFoundException2(
+                                String.format(
+                                        "Meter: \"%s\" does not exist.",
+                                        titleMetersNumber
+                                )
+                        )
+                );
 
-        return filesPage.stream()
-                .map(fileDtoFactory::makeFileDto)
-                .collect(Collectors.toList());
+        System.out.println("Found Meter: " + meters.getTitleMetersNumber());
+
+        return metersDTOFactory.makeMetersDTO(meters);
+    }
+
+    @DeleteMapping(DELETE_METERS)
+    public ResponseEntity<MetersDTO> deleteMeters(
+            @PathVariable("titleMetersNumber") String titleMetersNumber) {
+
+        MetersEntity meters = metersRepository
+                .findByTitleMetersNumber(titleMetersNumber)
+                .orElseThrow(() ->
+                        new NotFoundException2(
+                                String.format(
+                                        "Meter: \"%s\" does not exist.",
+                                        titleMetersNumber
+                                )
+                        )
+                );
+
+        metersRepository.delete(meters);
+
+        System.out.println("Deleted Meter: " + meters.getTitleMetersNumber());
+
+        return ResponseEntity.noContent().build();
     }
 }
