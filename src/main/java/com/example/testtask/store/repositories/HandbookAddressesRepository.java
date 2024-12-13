@@ -12,7 +12,6 @@ import java.util.Optional;
 
 public interface HandbookAddressesRepository extends JpaRepository<HandbookAddressesEntity, Long> {
 
-//    @Override
     @NonNull
     Optional<HandbookAddressesEntity> findByTitleAddress(String titleAddress);
 

@@ -24,7 +24,4 @@ public class HandbookTypeMetersDTO {
     @JsonProperty
     Instant createdAt;
 
-    @NonNull
-    String description;
-
 }

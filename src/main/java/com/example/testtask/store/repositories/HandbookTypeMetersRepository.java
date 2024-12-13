@@ -12,9 +12,10 @@ public interface HandbookTypeMetersRepository extends JpaRepository<HandbookType
 
     @Override
     @NonNull
-    Optional<HandbookTypeMetersEntity> findById(Long id);
+    Optional<HandbookTypeMetersEntity> findById(@NonNull Long id);
 
     @NonNull
-    Page<HandbookTypeMetersEntity> findAll(Pageable pageable);
+    Page<HandbookTypeMetersEntity> findAll(@NonNull Pageable pageable);
 
+    Optional<HandbookTypeMetersEntity> findByTitleTypeMeters(String titleTypeMeters);
 }

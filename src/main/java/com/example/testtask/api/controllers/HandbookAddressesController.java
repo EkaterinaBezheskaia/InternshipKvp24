@@ -23,8 +23,6 @@ import java.util.stream.Collectors;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Transactional
 @RestController
-//@Component
-//@Repository
 
 //TO DO: Сделать валидацию для обработки ожидаемых форматов данных с помощью библиотеки javax.validation
 

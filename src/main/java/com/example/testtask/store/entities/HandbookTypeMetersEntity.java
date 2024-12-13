@@ -26,9 +26,6 @@ public class HandbookTypeMetersEntity extends HandbookTypeMetersDTO {
         @Builder.Default
         Instant creationDate = Instant.now();
 
-        @Builder.Default
-        private String description = "";
-
         @OneToMany(mappedBy = "type")
         private List<MetersEntity> meters;
 
