@@ -21,13 +21,12 @@ public class HandbookAddressesDTO {
     String titleAddress;
 
     @NonNull
+    Integer number;
+
     String literal;
 
     @NonNull
     @JsonProperty("creation_date")
     Instant creationDate = Instant.now();
-
-    @NonNull
-    String description;
 
 }

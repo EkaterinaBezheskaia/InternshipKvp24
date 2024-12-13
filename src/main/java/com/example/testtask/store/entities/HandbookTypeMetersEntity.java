@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-//@Table(name = "files_base")
+
 public class HandbookTypeMetersEntity extends HandbookTypeMetersDTO {
 
         @Id
@@ -22,9 +22,6 @@ public class HandbookTypeMetersEntity extends HandbookTypeMetersDTO {
 
         @Column(unique = true)
         private String titleTypeMeters;
-
-//        @Builder.Default
-//        String base64File = "";
 
         @Builder.Default
         Instant creationDate = Instant.now();

@@ -13,7 +13,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-//@Table(name = "files_base")
 
 public class HandbookAddressesEntity extends HandbookAddressesDTO {
 
@@ -21,20 +20,16 @@ public class HandbookAddressesEntity extends HandbookAddressesDTO {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column //(unique = true)
+    @Column (nullable = false)
     private String titleAddress;
 
-    @Builder.Default
+    @Column (nullable = false)
+    private Integer number;
+
     private String literal = "";
 
-//        @Builder.Default
-//        String base64File = "";
-
-    @Builder.Default
+    @Column (nullable = false)
     Instant creationDate = Instant.now();
-
-    @Builder.Default
-    private String description = "";
 
     @OneToMany(mappedBy = "address")
     private List<MetersEntity> meters;

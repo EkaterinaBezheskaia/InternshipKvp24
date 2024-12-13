@@ -6,7 +6,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.lang.NonNullApi;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,9 +18,9 @@ public interface HandbookAddressesRepository extends JpaRepository<HandbookAddre
 
     @Override
     @NonNull
-    Page<HandbookAddressesEntity> findAll(Pageable pageable);
+    Page<HandbookAddressesEntity> findAll(@NonNull Pageable pageable);
 
-    Optional<HandbookAddressesEntity> findByTitleAddressAndLiteral(String titleAddress, String literal);
+    Optional<HandbookAddressesEntity> findByTitleAddressAndNumberAndLiteral (String titleAddress, Integer number, String literal);
 
-    List<HandbookAddressesEntity> findByTitleAddressOrderByLiteralAsc(PageRequest of);
+    List<HandbookAddressesEntity> findByTitleAddressOrderByNumberAsc(PageRequest of);
 }

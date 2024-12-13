@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
@@ -13,7 +14,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-//@Table(name = "files_base")
 
 public class MetersEntity extends MetersDTO {
 
@@ -24,14 +24,11 @@ public class MetersEntity extends MetersDTO {
     @Column(unique = true)
     private String titleMetersNumber;
 
-//        @Builder.Default
-//        String base64File = "";
+    @Column(name = "installation_date")
+    private LocalDate installationDate;
 
     @Builder.Default
     Instant creationDate = Instant.now();
-
-    @Builder.Default
-    private String description = "";
 
     @ManyToOne
     @JoinColumn(name = "address_id")
