@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
+import java.time.Month;
 
 @Getter
 @Setter
@@ -20,6 +21,10 @@ public class MeterReadingsEntity extends MeterReadingsDTO {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Month readingsDate;
+
     @Builder.Default
     Instant creationDate = Instant.now();
 
@@ -27,7 +32,7 @@ public class MeterReadingsEntity extends MeterReadingsDTO {
     private Long readings;
 
     @ManyToOne
-    @JoinColumn(name = "meter_id")
+    @JoinColumn //(name = "meter_id")
     private MetersEntity meter;
 
 }

@@ -11,6 +11,7 @@ public class MeterReadingsDTOFactory {
 
         return MeterReadingsDTO.fileDtoBuilder()
                 .id(entity.getId())
+                .readingsDate(entity.getReadingsDate())
                 .createdAt(entity.getCreatedAt())
                 .readings(entity.getReadings())
                 .build();
