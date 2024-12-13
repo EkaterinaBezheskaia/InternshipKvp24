@@ -21,12 +21,14 @@ public class HandbookAddressesEntity extends HandbookAddressesDTO {
     private Long id;
 
     @Column (nullable = false)
-    private String titleAddress;
+    private String street;
 
     @Column (nullable = false)
     private Integer number;
 
     private String literal = "";
+
+    private Integer flat;
 
     @Column (nullable = false)
     Instant creationDate = Instant.now();

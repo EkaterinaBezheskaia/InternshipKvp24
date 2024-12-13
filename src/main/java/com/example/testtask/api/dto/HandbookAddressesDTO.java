@@ -18,12 +18,14 @@ public class HandbookAddressesDTO {
     Long id;
 
     @NonNull
-    String titleAddress;
+    String street;
 
     @NonNull
     Integer number;
 
     String literal;
+
+    Integer flat;
 
     @NonNull
     @JsonProperty("creation_date")

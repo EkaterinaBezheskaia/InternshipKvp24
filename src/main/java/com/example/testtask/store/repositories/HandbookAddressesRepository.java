@@ -13,13 +13,15 @@ import java.util.Optional;
 public interface HandbookAddressesRepository extends JpaRepository<HandbookAddressesEntity, Long> {
 
     @NonNull
-    Optional<HandbookAddressesEntity> findByTitleAddress(String titleAddress);
+    Optional<HandbookAddressesEntity> findByStreet(String street);
 
     @Override
     @NonNull
     Page<HandbookAddressesEntity> findAll(@NonNull Pageable pageable);
 
-    Optional<HandbookAddressesEntity> findByTitleAddressAndNumberAndLiteral (String titleAddress, Integer number, String literal);
+    Optional<HandbookAddressesEntity> findByStreetAndNumberAndLiteral (String street, Integer number, String literal);
 
-    List<HandbookAddressesEntity> findByTitleAddressOrderByNumberAsc(PageRequest of);
+    Optional<HandbookAddressesEntity> findByStreetAndNumberAndLiteralAndFlat (String street, Integer number, String literal, Integer flat);
+
+    List<HandbookAddressesEntity> findByStreetOrderByNumberAsc(String street, Pageable pageable);
 }

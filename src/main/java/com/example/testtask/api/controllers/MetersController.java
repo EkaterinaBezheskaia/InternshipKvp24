@@ -4,8 +4,11 @@ import com.example.testtask.api.dto.MetersDTO;
 import com.example.testtask.api.exceptions.BadRequestException2;
 import com.example.testtask.api.exceptions.NotFoundException2;
 import com.example.testtask.api.factories.MetersDTOFactory;
+import com.example.testtask.store.entities.HandbookAddressesEntity;
 import com.example.testtask.store.entities.MetersEntity;
+import com.example.testtask.store.repositories.HandbookAddressesRepository;
 import com.example.testtask.store.repositories.MetersRepository;
+import com.example.testtask.api.controllers.HandbookAddressesController;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -29,10 +32,15 @@ public class MetersController {
     public static final String EDIT_METERS = "/api/meters/{titleMetersNumber}";
     public static final String GET_METERS = "/api/meters/{titleMetersNumber}";
     public static final String DELETE_METERS = "/api/meters/{titleMetersNumber}";
+    private final HandbookAddressesRepository handbookAddressesRepository;
 
     @PostMapping(CREATE_METERS)
     public MetersDTO createMetersNumber(
-            @RequestParam String titleMetersNumber) {
+            @RequestParam String titleMetersNumber,
+            @RequestParam String street,
+            @RequestParam Integer number,
+            @RequestParam(required=false) String literal,
+            @RequestParam(required=false) Integer flat) {
 
         metersRepository
                 .findByTitleMetersNumber(titleMetersNumber)
@@ -45,9 +53,19 @@ public class MetersController {
                     );
                 });
 
+        HandbookAddressesEntity address = handbookAddressesRepository
+                .findByStreetAndNumberAndLiteralAndFlat(street, number, literal, flat)
+                .orElseThrow(() -> new NotFoundException2(
+                        String.format(
+                                "Address \"%s %d %s %d\" does not exist.",
+                                street, number, literal, flat
+                        )
+                ));
+
         MetersEntity meters = metersRepository.saveAndFlush(
                 MetersEntity.builder()
                         .titleMetersNumber(titleMetersNumber)
+                        .address(address)
                         .build()
         );
 

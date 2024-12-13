@@ -11,9 +11,10 @@ public class HandbookAddressesDTOFactory {
 
         return HandbookAddressesDTO.fileDtoBuilder()
                 .id(entity.getId())
-                .titleAddress(entity.getTitleAddress())
+                .street(entity.getStreet())
                 .number(entity.getNumber())
                 .literal(entity.getLiteral())
+                .flat(entity.getFlat())
                 .creationDate(entity.getCreationDate())
                 .build();
     }
