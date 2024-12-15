@@ -11,7 +11,7 @@ public class MetersDTOFactory {
 
         return MetersDTO.fileDtoBuilder()
                 .id(entity.getId())
-                .titleMetersNumber(entity.getTitleMetersNumber())
+                .metersSerialNumber(entity.getMetersSerialNumber())
                 .installationDate(entity.getInstallationDate())
                 .creationDate(entity.getCreationDate())
                 .build();

@@ -17,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.time.Month;
 import java.util.Arrays;
 import java.util.List;
@@ -60,6 +61,7 @@ public class MeterReadingsController {
         MeterReadingsEntity meterReadings = meterReadingsRepository.saveAndFlush(
                 MeterReadingsEntity.builder()
                         .readingsDate(newReadingsDate)
+                        .createdAt(Instant.now())
                         .readings(readings)
                         .build()
         );

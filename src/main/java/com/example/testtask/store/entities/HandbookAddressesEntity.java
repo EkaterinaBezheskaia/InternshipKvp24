@@ -26,12 +26,12 @@ public class HandbookAddressesEntity extends HandbookAddressesDTO {
     @Column (nullable = false)
     private Integer number;
 
-    private String literal = "";
+    private String literal;
 
     private Integer flat;
 
     @Column (nullable = false)
-    Instant creationDate = Instant.now();
+    Instant createdAt = Instant.now();
 
     @OneToMany(mappedBy = "address")
     private List<MetersEntity> meters;

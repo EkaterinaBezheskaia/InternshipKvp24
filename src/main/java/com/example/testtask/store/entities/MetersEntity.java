@@ -22,7 +22,7 @@ public class MetersEntity extends MetersDTO {
     private Long id;
 
     @Column(unique = true)
-    private String titleMetersNumber;
+    private String metersSerialNumber;
 
     @Column //(name = "installation_date")
     private LocalDate installationDate;

@@ -17,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -63,6 +64,8 @@ public class HandbookAddressesController {
                         .street(street)
                         .number(number)
                         .literal(literal)
+                        .flat(flat)
+                        .createdAt(Instant.now())
                         .build()
         );
 

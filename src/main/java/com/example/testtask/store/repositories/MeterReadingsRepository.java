@@ -14,10 +14,10 @@ public interface MeterReadingsRepository extends JpaRepository<MeterReadingsEnti
 
     @Override
     @NonNull
-    Optional<MeterReadingsEntity> findById(Long id);
+    Optional<MeterReadingsEntity> findById(@NonNull Long id);
 
     @NonNull
-    Page<MeterReadingsEntity> findAll(Pageable pageable);
+    Page<MeterReadingsEntity> findAll(@NonNull Pageable pageable);
 
     Optional<MeterReadingsEntity> findByMeterAndReadingsDate(MetersEntity meter, Month readingsDate);
 }

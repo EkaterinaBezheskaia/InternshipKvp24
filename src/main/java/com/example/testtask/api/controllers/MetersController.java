@@ -8,13 +8,14 @@ import com.example.testtask.store.entities.HandbookAddressesEntity;
 import com.example.testtask.store.entities.MetersEntity;
 import com.example.testtask.store.repositories.HandbookAddressesRepository;
 import com.example.testtask.store.repositories.MetersRepository;
-import com.example.testtask.api.controllers.HandbookAddressesController;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -27,28 +28,30 @@ public class MetersController {
 
     MetersRepository metersRepository;
     MetersDTOFactory metersDTOFactory;
+    HandbookAddressesRepository handbookAddressesRepository;
 
     public static final String CREATE_METERS = "/api/meters";
-    public static final String EDIT_METERS = "/api/meters/{titleMetersNumber}";
-    public static final String GET_METERS = "/api/meters/{titleMetersNumber}";
-    public static final String DELETE_METERS = "/api/meters/{titleMetersNumber}";
-    private final HandbookAddressesRepository handbookAddressesRepository;
+    public static final String EDIT_METERS = "/api/meters/{metersSerialNumber}";
+    public static final String EDIT_DATE = "/api/meters/{metersSerialNumber}/{installationDate}";
+    public static final String GET_METERS = "/api/meters/{metersSerialNumber}";
+    public static final String DELETE_METERS = "/api/meters/{metersSerialNumber}";
 
     @PostMapping(CREATE_METERS)
-    public MetersDTO createMetersNumber(
-            @RequestParam String titleMetersNumber,
+    public MetersDTO createMetersSerialNumber(
+            @RequestParam String metersSerialNumber,
             @RequestParam String street,
             @RequestParam Integer number,
             @RequestParam(required=false) String literal,
-            @RequestParam(required=false) Integer flat) {
+            @RequestParam(required=false) Integer flat,
+            @RequestParam LocalDate installationDate) {
 
         metersRepository
-                .findByTitleMetersNumber(titleMetersNumber)
+                .findByMetersSerialNumber(metersSerialNumber)
                 .ifPresent(meters -> {
                     throw new BadRequestException2(
                             String.format(
                                     "Meter: \"%s\" already exists.",
-                                    titleMetersNumber
+                                    metersSerialNumber
                             )
                     );
                 });
@@ -64,8 +67,9 @@ public class MetersController {
 
         MetersEntity meters = metersRepository.saveAndFlush(
                 MetersEntity.builder()
-                        .titleMetersNumber(titleMetersNumber)
+                        .metersSerialNumber(metersSerialNumber)
                         .address(address)
+                        .installationDate(installationDate)
                         .build()
         );
 
@@ -74,32 +78,78 @@ public class MetersController {
 
     @PatchMapping(EDIT_METERS)
     public MetersDTO editMeter(
-            @PathVariable("titleMetersNumber") String titleMetersNumber,
-            @RequestParam String newTitleMetersNumber) {
+            @PathVariable("metersSerialNumber") String metersSerialNumber,
+            @RequestParam String newMetersSerialNumber) {
 
         MetersEntity meters = metersRepository
-                .findByTitleMetersNumber(titleMetersNumber)
+                .findByMetersSerialNumber(metersSerialNumber)
                 .orElseThrow(() ->
                         new NotFoundException2(
                                 String.format(
                                         "Meter: \"%s\" does not exist.",
-                                        titleMetersNumber
+                                        metersSerialNumber
                                 )
                         )
                 );
 
         metersRepository
-                .findByTitleMetersNumber(newTitleMetersNumber)
+                .findByMetersSerialNumber(metersSerialNumber)
                 .ifPresent(existingMeters -> {
                     throw new BadRequestException2(
                             String.format(
                                     "Meter: \"%s\" already exists.",
-                                    titleMetersNumber
+                                    newMetersSerialNumber
                             )
                     );
                 });
 
-        meters.setTitleMetersNumber(newTitleMetersNumber);
+        meters.setMetersSerialNumber(newMetersSerialNumber);
+
+        meters = metersRepository.saveAndFlush(meters);
+
+        return metersDTOFactory.makeMetersDTO(meters);
+    }
+
+    @PatchMapping(EDIT_DATE)
+    public MetersDTO editDate(
+            @PathVariable("metersSerialNumber") String metersSerialNumber,
+            @PathVariable("installationDate") LocalDate installationDate,
+            @RequestParam LocalDate newInstallationDate) {
+
+        MetersEntity meters = metersRepository
+                .findByMetersSerialNumber(metersSerialNumber)
+                .orElseThrow(() ->
+                        new NotFoundException2(
+                                String.format(
+                                        "Meter: \"%s\" does not exist.",
+                                        metersSerialNumber
+                                )
+                        )
+                );
+
+        MetersEntity meters_installation_date = metersRepository
+                .findByMetersSerialNumberAndInstallationDate(metersSerialNumber, newInstallationDate)
+                .orElseThrow(() ->
+                        new NotFoundException2(
+                                String.format(
+                                        "Meter: \"%s\" \"%s\" does not exist.",
+                                        metersSerialNumber, installationDate
+                                )
+                        )
+                );
+
+        metersRepository
+                .findByMetersSerialNumberAndInstallationDate(metersSerialNumber, newInstallationDate)
+                .ifPresent(existingMeters -> {
+                    throw new BadRequestException2(
+                            String.format(
+                                    "Meter: \"%s\" \"%s\" already exists.",
+                                    metersSerialNumber, newInstallationDate
+                            )
+                    );
+                });
+
+        meters.setInstallationDate(newInstallationDate);
 
         meters = metersRepository.saveAndFlush(meters);
 
@@ -108,42 +158,42 @@ public class MetersController {
 
     @GetMapping(GET_METERS)
     public MetersDTO getTitleMeters(
-            @PathVariable("titleMetersNumber") String titleMetersNumber) {
+            @PathVariable("metersSerialNumber") String metersSerialNumber) {
 
         MetersEntity meters = metersRepository
-                .findByTitleMetersNumber(titleMetersNumber)
+                .findByMetersSerialNumber(metersSerialNumber)
                 .orElseThrow(() ->
                         new NotFoundException2(
                                 String.format(
                                         "Meter: \"%s\" does not exist.",
-                                        titleMetersNumber
+                                        metersSerialNumber
                                 )
                         )
                 );
 
-        System.out.println("Found Meter: " + meters.getTitleMetersNumber());
+        System.out.println("Found Meter: " + meters.getMetersSerialNumber());
 
         return metersDTOFactory.makeMetersDTO(meters);
     }
 
     @DeleteMapping(DELETE_METERS)
     public ResponseEntity<MetersDTO> deleteMeters(
-            @PathVariable("titleMetersNumber") String titleMetersNumber) {
+            @PathVariable("metersSerialNumber") String metersSerialNumber) {
 
         MetersEntity meters = metersRepository
-                .findByTitleMetersNumber(titleMetersNumber)
+                .findByMetersSerialNumber(metersSerialNumber)
                 .orElseThrow(() ->
                         new NotFoundException2(
                                 String.format(
                                         "Meter: \"%s\" does not exist.",
-                                        titleMetersNumber
+                                        metersSerialNumber
                                 )
                         )
                 );
 
         metersRepository.delete(meters);
 
-        System.out.println("Deleted Meter: " + meters.getTitleMetersNumber());
+        System.out.println("Deleted Meter: " + meters.getMetersSerialNumber());
 
         return ResponseEntity.noContent().build();
     }

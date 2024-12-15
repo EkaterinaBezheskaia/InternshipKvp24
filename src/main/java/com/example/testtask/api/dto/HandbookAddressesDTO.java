@@ -29,6 +29,6 @@ public class HandbookAddressesDTO {
 
     @NonNull
     @JsonProperty("creation_date")
-    Instant creationDate = Instant.now();
+    Instant createdAt = Instant.now();
 
 }

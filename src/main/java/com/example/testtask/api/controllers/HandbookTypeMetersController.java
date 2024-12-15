@@ -16,6 +16,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,6 +56,7 @@ public class HandbookTypeMetersController {
         HandbookTypeMetersEntity handbookTypeMeters = handbookTypeMetersRepository.saveAndFlush(
                 HandbookTypeMetersEntity.builder()
                         .titleTypeMeters(titleTypeMeters)
+                        .createdAt(Instant.now())
                         .build()
         );
 
@@ -88,7 +90,7 @@ public class HandbookTypeMetersController {
                     );
                 });
 
-        handbookTypeMeters.setTitleTypeMeters(titleTypeMeters);
+        handbookTypeMeters.setTitleTypeMeters(newTitleTypeMeters);
 
         handbookTypeMeters = handbookTypeMetersRepository.saveAndFlush(handbookTypeMeters);
 

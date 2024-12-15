@@ -26,7 +26,7 @@ public class MeterReadingsEntity extends MeterReadingsDTO {
     private Month readingsDate;
 
     @Builder.Default
-    Instant creationDate = Instant.now();
+    Instant createdAt = Instant.now();
 
     @Column (nullable = false)
     private Long readings;

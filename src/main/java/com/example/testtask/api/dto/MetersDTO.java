@@ -19,7 +19,7 @@ public class MetersDTO {
     Long id;
 
     @NonNull
-    String titleMetersNumber;
+    String metersSerialNumber;
 
     @NonNull
     LocalDate installationDate;
