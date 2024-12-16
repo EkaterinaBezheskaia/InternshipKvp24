@@ -14,20 +14,23 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+//@Table(name = "Meters")
 
 public class MetersEntity extends MetersDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column //(name = "column_0_id")
     private Long id;
 
-    @Column(unique = true)
+    @Column //(name = "column_1_serial_number", unique = true)
     private String metersSerialNumber;
 
-    @Column //(name = "installation_date")
+    @Column //(name = "column_2_installation_date")
     private LocalDate installationDate;
 
     @Builder.Default
+    @Column //(name = "column_4_creation_date")
     Instant creationDate = Instant.now();
 
     @ManyToOne

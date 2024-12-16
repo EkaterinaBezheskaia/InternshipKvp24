@@ -13,17 +13,20 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+//@Table(name = "HandbookTypeMeters")
 
 public class HandbookTypeMetersEntity extends HandbookTypeMetersDTO {
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
+        @Column //(name = "column_0_id")
         private Long id;
 
-        @Column(unique = true)
+        @Column //(name = "column_1_titleTypeMeters", unique = true)
         private String titleTypeMeters;
 
         @Builder.Default
+        @Column //(name = "column_2_creation_date")
         Instant createdAt = Instant.now();
 
         @OneToMany(mappedBy = "type")

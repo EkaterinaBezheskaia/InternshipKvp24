@@ -13,11 +13,13 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+//@Table(name = "HandbookAdresses")
 
 public class HandbookAddressesEntity extends HandbookAddressesDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column //(name = "column_0_id")
     private Long id;
 
     @Column (nullable = false)
@@ -26,12 +28,14 @@ public class HandbookAddressesEntity extends HandbookAddressesDTO {
     @Column (nullable = false)
     private Integer number;
 
+    @Column //(name = "column_3_literal")
     private String literal;
 
+    @Column //(name = "column_4_flat")
     private Integer flat;
 
     @Column (nullable = false)
-    Instant createdAt = Instant.now();
+    private Instant createdAt = Instant.now();
 
     @OneToMany(mappedBy = "address")
     private List<MetersEntity> meters;

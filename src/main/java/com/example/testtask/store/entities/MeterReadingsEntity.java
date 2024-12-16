@@ -13,12 +13,13 @@ import java.time.Month;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-//@Table(name = "files_base")
+//@Table(name = "Readings")
 
 public class MeterReadingsEntity extends MeterReadingsDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column //(name = "column_0_id")
     private Long id;
 
     @Enumerated(EnumType.STRING)
@@ -26,6 +27,7 @@ public class MeterReadingsEntity extends MeterReadingsDTO {
     private Month readingsDate;
 
     @Builder.Default
+    @Column //(name = "column_2_creation_date")
     Instant createdAt = Instant.now();
 
     @Column (nullable = false)
