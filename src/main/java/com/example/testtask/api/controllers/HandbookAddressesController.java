@@ -35,26 +35,37 @@ public class HandbookAddressesController {
     HandbookAddressesDTOFactory handbookAddressesDTOFactory;
 
     public static final String CREATE_ADDRESS = "/api/addresses";
-    public static final String EDIT_ADDRESS = "/api/addresses/{street}/{number}/{literal}/{flat}";
+    public static final String EDIT_ADDRESS = "/api/addresses/{street}/{number}";
     public static final String GET_ALL_ADDRESSES = "/api/addresses";
-    public static final String GET_ADDRESS = "/{street}/{number}/{literal}/{flat}";
+    public static final String GET_ADDRESS = "/{street}/{number}";
     public static final String GET_STREETS = "/api/streets/{street}";
-    public static final String DELETE_ADDRESS = "/api/addresses/{street}/{number}/{literal}/{flat}";
+    public static final String DELETE_ADDRESS = "/api/addresses/{street}/{number}";
 
-    @PostMapping(CREATE_ADDRESS)
+    @PostMapping(CREATE_ADDRESS) //TO DO: при удалении записей id увеличивается, хз надо фиксить или нет
+    // (если таблица пустая, то начать отсчет заново); Если вносить адрес полный, а потом без литерала/квартиры,
+    // то кидает ошибку exists;
+    // исправить время (часовой пояс нужен +4)
     public HandbookAddressesDTO createAddress(
             @RequestParam String street,
             @RequestParam Integer number,
             @RequestParam(required=false) String literal,
             @RequestParam(required=false) Integer flat) {
 
+        literal = (literal == null) ? "" : literal;
+        flat = (flat == null) ? 0 : flat;
+
+        String finalLiteral = literal;
+        Integer finalFlat = flat;
+
         handbookAddressesRepository
                 .findByStreetAndNumberAndLiteralAndFlat(street, number, literal, flat)
                 .ifPresent(existingAddresses -> {
                     throw new BadRequestException2(
                             String.format(
-                                    "Address \"%s\" \"%s\" \"%s\" \"%s\" already exists.",
-                                    street, number, literal, flat
+                                    "Address \"%s\" \"%s\"%s%s already exists.",
+                                    street, number,
+                                    (!finalLiteral.isEmpty() ? String.format(" \"%s\"", finalLiteral) : ""),
+                                    (finalFlat != 0 ? String.format(" \"%s\"", finalFlat) : "")
                             )
                     );
                 });
@@ -72,16 +83,22 @@ public class HandbookAddressesController {
         return handbookAddressesDTOFactory.makeHandbookAddressesDTO(handbookAddresses);
     }
 
-    @PatchMapping(EDIT_ADDRESS)
+    @PatchMapping(EDIT_ADDRESS) //Если нужно поменять только улицу или только номер, то нужно исправить параметры на необязательные
     public HandbookAddressesDTO editAddress(
             @PathVariable("street") String street,
             @PathVariable("number") Integer number,
-            @PathVariable(value = "literal", required = false) String literal,
-            @PathVariable(value = "flat", required = false) Integer flat,
-            @RequestParam String newStreet,
-            @RequestParam Integer newNumber,
+            @RequestParam(required=false) String literal,
+            @RequestParam(required=false) Integer flat,
+            @RequestParam(required=false) String newStreet,
+            @RequestParam(required=false) Integer newNumber,
             @RequestParam(required=false) String newLiteral,
             @RequestParam(required=false) Integer newFlat) {
+
+        literal = (literal == null) ? "" : literal;
+        flat = (flat == null) ? 0 : flat;
+
+        String finalLiteral = literal;
+        Integer finalFlat = flat;
 
         HandbookAddressesEntity handbookAddresses = handbookAddressesRepository
                 .findByStreetAndNumberAndLiteralAndFlat(street, number, literal, flat)
@@ -89,18 +106,28 @@ public class HandbookAddressesController {
                         new NotFoundException2(
                                 String.format(
                                         "Address with \"%s\" \"%s\" \"%s\" \"%s\" does not exist.",
-                                        street, number, literal, flat
+                                        street, number,
+                                        (!finalLiteral.isEmpty() ? String.format(" \"%s\"", finalLiteral) : ""),
+                                        (finalFlat != 0 ? String.format(" \"%s\"", finalFlat) : "")
                                 )
                         )
                 );
 
+        newLiteral = (newLiteral == null) ? "" : newLiteral;
+        newFlat = (newFlat == null) ? 0 : newFlat;
+
+        String finalNewLiteral = newLiteral;
+        Integer finalNewFlat = newFlat;
         handbookAddressesRepository
-                .findByStreetAndNumberAndLiteralAndFlat(street, number, literal, flat)
+                .findByStreetAndNumberAndLiteralAndFlat(newStreet, newNumber, newLiteral, newFlat)
                 .ifPresent(existingAddresses -> {
                     throw new BadRequestException2(
                             String.format(
                                     "Address \"%s\" \"%s\" \"%s\" \"%s\" already exists.",
-                                    newStreet, newNumber, newLiteral, newFlat
+                                    (newStreet != null ? String.format(" \"%s\"", newStreet) : ""),
+                                    (newNumber != null ? String.format(" \"%s\"", newNumber) : ""),
+                                    (!finalNewLiteral.isEmpty() ? String.format(" \"%s\"", finalNewLiteral) : ""),
+                                    (finalNewFlat != 0 ? String.format(" \"%s\"", finalNewFlat) : "")
                             )
                     );
                 });
@@ -117,52 +144,49 @@ public class HandbookAddressesController {
 
 
     @GetMapping(HandbookAddressesController.GET_ADDRESS)
-    public HandbookAddressesDTO getStreet(
+    public List<HandbookAddressesDTO> getStreet(
             @PathVariable("street") String street,
             @PathVariable("number") Integer number,
-            @PathVariable(value = "literal", required = false) String literal,
-            @PathVariable(value = "flat", required = false) Integer flat) {
+            @RequestParam(required = false) String literal,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "flat") String[] sortBy) {
 
-        HandbookAddressesEntity handbookAddresses = handbookAddressesRepository
-                .findByStreetAndNumberAndLiteralAndFlat(street, number, literal, flat)
-                .orElseThrow(() ->
-                        new NotFoundException2(
-                                String.format(
-                                        "Address with \"%s\" \"%s\" \"%s\" \"%s\" does not exist.",
-                                        street, number, literal, flat
-                                )
-                        )
-                );
+        Sort sort = Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size);
 
-        System.out.println("Found Address: " + handbookAddresses.getStreet());
+        List<HandbookAddressesEntity> addresses = handbookAddressesRepository
+                .findByStreetAndNumberOrderByLiteralAscFlatAsc(street, number, pageable); //Поиск по улице И по номеру
 
-        return handbookAddressesDTOFactory.makeHandbookAddressesDTO(handbookAddresses);
+        if (addresses.isEmpty()) {
+            throw new NotFoundException2(
+                    String.format("Не найдено адресов для улицы \"%s\".", street)
+            );
+        }
 
+        return addresses.stream()
+                .map(handbookAddressesDTOFactory::makeHandbookAddressesDTO)
+                .collect(Collectors.toList());
     }
 
-    @GetMapping(HandbookAddressesController.GET_STREETS)
+    @GetMapping(HandbookAddressesController.GET_STREETS) //TO DO: выдает только один результат, на нескольких кидает ошибку
     public List<HandbookAddressesDTO> getStreets(
             @PathVariable("street") String street,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "number") String[] sortBy) {
 
-        HandbookAddressesEntity handbookAddresses = handbookAddressesRepository
-                .findByStreet(street)
-                .orElseThrow(() ->
-                        new NotFoundException2(
-                                String.format(
-                                        "Address with \"%s\" does not exist.",
-                                        street
-                                )
-                        )
-                );
-
         Sort sort = Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size);
 
-        Pageable pageable = PageRequest.of(0, 10);
         List<HandbookAddressesEntity> addresses = handbookAddressesRepository
                 .findByStreetOrderByNumberAsc(street, pageable);
+
+        if (addresses.isEmpty()) {
+            throw new NotFoundException2(
+                    String.format("Не найдено адресов для улицы \"%s\".", street)
+            );
+        }
 
         return addresses.stream()
                 .map(handbookAddressesDTOFactory::makeHandbookAddressesDTO)
@@ -186,27 +210,54 @@ public class HandbookAddressesController {
                 .collect(Collectors.toList());
     }
 
-    @DeleteMapping(DELETE_ADDRESS)
+    @DeleteMapping(DELETE_ADDRESS) //TO DO: Не ищет адреса
     public ResponseEntity<HandbookAddressesDTO> deleteAddress(
             @PathVariable("street") String street,
             @PathVariable("number") Integer number,
-            @PathVariable(value = "literal", required = false) String literal,
-            @PathVariable(value = "flat", required = false) Integer flat) {
+            @RequestParam(required = false) String literal,
+            @RequestParam(required = false) Integer flat) {
 
-        HandbookAddressesEntity handbookAddresses = handbookAddressesRepository
-                .findByStreetAndNumberAndLiteralAndFlat(street, number, literal, flat)
-                .orElseThrow(() ->
-                        new NotFoundException2(
-                                String.format(
-                                        "Address with \"%s\" \"%s\" \"%s\" \"%s\" does not exist.",
-                                        street, number, literal, flat
-                                )
-                        )
-                );
+        List<HandbookAddressesEntity> addresses = handbookAddressesRepository
+                .findByStreetAndNumber(street, number);
 
-        handbookAddressesRepository.delete(handbookAddresses);
+        if (literal == null && flat == null) {
+            // Удаляем только адреса с null literal и flat
+            addresses = addresses.stream()
+                    .filter(address -> address.getLiteral() == null && address.getFlat() == null)
+                    .collect(Collectors.toList());
+        } else if (literal != null && flat == null) {
+            // Удаляем только адреса с указанным literal и null flat
+            addresses = addresses.stream()
+                    .filter(address -> literal.equals(address.getLiteral()) && address.getFlat() == null)
+                    .collect(Collectors.toList());
+        } else if (literal == null && flat != null) {
+            // Удаляем только адреса с null literal и указанным flat
+            addresses = addresses.stream()
+                    .filter(address -> address.getLiteral() == null && flat.equals(address.getFlat()))
+                    .collect(Collectors.toList());
+        } else if (literal != null && flat != null) {
+            // Удаляем только адреса с указанными literal и flat
+            addresses = addresses.stream()
+                    .filter(address -> literal.equals(address.getLiteral()) && flat.equals(address.getFlat()))
+                    .collect(Collectors.toList());
+        }
 
-        System.out.println("Deleted Address: " + handbookAddresses.getStreet());
+        // Если после фильтрации список пуст, выбрасываем исключение
+        if (addresses.isEmpty()) {
+            throw new NotFoundException2(
+                    String.format(
+                            "Address with \"%s\" \"%s\"%s%s does not exist.",
+                            street, number,
+                            (literal != null && !literal.isEmpty() ? String.format(" \"%s\"", literal) : ""),
+                            (flat != null ? String.format(" \"%s\"", flat) : "")
+                    )
+            );
+        }
+
+        for (HandbookAddressesEntity address : addresses) {
+            handbookAddressesRepository.delete(address);
+            System.out.println("Deleted Address: " + address.getStreet() + " " + address.getNumber() + " " + address.getLiteral() + " " + address.getFlat());
+        }
 
         return ResponseEntity.noContent().build();
     }
