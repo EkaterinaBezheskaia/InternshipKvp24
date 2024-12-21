@@ -1,43 +1,46 @@
 package com.example.testtask.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.Column;
-import jakarta.persistence.Table;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Data
 @Builder(builderMethodName = "fileDtoBuilder")
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-//@Table(name = "HandbookAddresses")
 
 public class HandbookAddressesDTO {
 
-    @Column //(name = "column_0_id")
-    @NonNull
+    @NotNull(message = "ID не должен быть пустым")
     Long id;
 
-    @Column //(name = "column_1_street")
-    @NonNull
+    @NotNull(message = "Улица не должна быть пустой")
+    @Size(max = 100, message = "Название улицы не должно превышать 100 символов")
     String street;
 
-    @Column //(name = "column_2_number")
-    @NonNull
+    @NotNull(message = "Номер не должен быть пустым")
+    @Min(value = 0, message = "Номер дома должен быть положительным")
     Integer number;
 
-    @Column //(name = "column_3_literal")
+    @Size(max = 1, message = "Литерал не должен превышать 1 символа")
     String literal;
 
-    @Column //(name = "column_4_flat")
+    @Min(value = 0, message = "Номер квартиры должен быть положительным")
     Integer flat;
 
-    @Column //(name = "column_5_creation_date")
     @NonNull
     @JsonProperty("creation_date")
     Instant createdAt = Instant.now();
+
+    @NonNull
+    LocalDateTime createdAtLocal = LocalDateTime.now(ZoneId.systemDefault());
 
 }

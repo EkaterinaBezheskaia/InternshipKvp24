@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Getter
@@ -13,12 +15,12 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "HandbookAdresses")
+@Table(name = "handbook_adresses")
 
 public class HandbookAddressesEntity extends HandbookAddressesDTO {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column (name = "column_0_id")
     private Long id;
 
@@ -34,8 +36,11 @@ public class HandbookAddressesEntity extends HandbookAddressesDTO {
     @Column (name = "column_4_flat")
     private Integer flat;
 
-    @Column (name = "column_5_creation_date", nullable = false)
+    @Column (name = "column_5_utc_date", nullable = false)
     private Instant createdAt = Instant.now();
+
+    @Column (name = "column_6_located_date", nullable = false)
+    private LocalDateTime createdAtLocal = LocalDateTime.now(ZoneId.systemDefault());
 
     @OneToMany(mappedBy = "address")
     private List<MetersEntity> meters;

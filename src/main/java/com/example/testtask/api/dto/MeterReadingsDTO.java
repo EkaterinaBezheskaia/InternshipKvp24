@@ -1,11 +1,15 @@
 package com.example.testtask.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.Month;
+import java.time.ZoneId;
 
 @Data
 @Builder(builderMethodName = "fileDtoBuilder")
@@ -15,17 +19,21 @@ import java.time.Month;
 
 public class MeterReadingsDTO {
 
-    @NonNull
+    @NotNull(message = "ID не должен быть пустым")
     Long id;
 
-    @NonNull
-    private Month readingsDate;
+    @NotNull(message = "Значение не должно быть пустым")
+    Month readingsDate;
+
+    @NotNull(message = "Значение не должно быть пустым")
+    @Digits(integer = 10, fraction = 3, message = "Значение должно быть в формате 0.001")
+    Double readings;
 
     @NonNull
-    @JsonProperty
-    Instant createdAt;
+    @JsonProperty("creation_date")
+    Instant createdAt = Instant.now();
 
     @NonNull
-    Long readings;
+    LocalDateTime createdAtLocal = LocalDateTime.now(ZoneId.systemDefault());
 
 }

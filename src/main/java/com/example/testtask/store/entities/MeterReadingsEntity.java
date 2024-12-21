@@ -5,7 +5,10 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.Month;
+import java.time.ZoneId;
+import java.util.List;
 
 @Getter
 @Setter
@@ -13,28 +16,31 @@ import java.time.Month;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-//@Table(name = "Readings")
+@Table(name = "meter_readings")
 
 public class MeterReadingsEntity extends MeterReadingsDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column //(name = "column_0_id")
+    @Column (name = "column_0_id")
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "column_1_readings_date", nullable = false)
     private Month readingsDate;
 
-    @Builder.Default
-    @Column //(name = "column_2_creation_date")
-    Instant createdAt = Instant.now();
+    @Column (name = "column_2_readins", nullable = false)
+    private Double readings;
 
-    @Column (nullable = false)
-    private Long readings;
+    @Builder.Default
+    @Column (name = "column_3_creation_date")
+    Instant creationDate = Instant.now();
+
+    @Column (name = "column_4_UTC_date", nullable = false)
+    private LocalDateTime createdAtLocal = LocalDateTime.now(ZoneId.systemDefault());
 
     @ManyToOne
-    @JoinColumn //(name = "meter_id")
+    @JoinColumn (name = "column_5_meter_id")
     private MetersEntity meter;
 
 }

@@ -16,6 +16,7 @@ public class HandbookAddressesDTOFactory {
                 .literal(entity.getLiteral())
                 .flat(entity.getFlat())
                 .createdAt(entity.getCreatedAt())
+                .createdAtLocal(entity.getCreatedAtLocal())
                 .build();
     }
 }

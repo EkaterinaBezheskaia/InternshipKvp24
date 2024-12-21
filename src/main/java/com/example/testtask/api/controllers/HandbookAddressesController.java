@@ -7,6 +7,9 @@ import com.example.testtask.api.factories.HandbookAddressesDTOFactory;
 import com.example.testtask.store.entities.HandbookAddressesEntity;
 import com.example.testtask.store.repositories.HandbookAddressesRepository;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -18,8 +21,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -30,22 +36,20 @@ import java.util.stream.Collectors;
 
 public class HandbookAddressesController {
 
-
     HandbookAddressesRepository handbookAddressesRepository;
     HandbookAddressesDTOFactory handbookAddressesDTOFactory;
 
     public static final String CREATE_ADDRESS = "/api/addresses";
     public static final String EDIT_ADDRESS = "/api/addresses/{street}/{number}";
     public static final String GET_ALL_ADDRESSES = "/api/addresses";
-    public static final String GET_ADDRESS = "/{street}/{number}";
-    public static final String GET_STREETS = "/api/streets/{street}";
+    public static final String GET_STREETS = "/api/addresses/{street}";
+    public static final String GET_ADDRESS = "/api/addresses/{street}/{number}";
     public static final String DELETE_ADDRESS = "/api/addresses/{street}/{number}";
+    public static final String DELETE_ALL_ADDRESS = "/api/addresses";
 
-    @PostMapping(CREATE_ADDRESS) //TO DO: при удалении записей id увеличивается, хз надо фиксить или нет
-    // (если таблица пустая, то начать отсчет заново); Если вносить адрес полный, а потом без литерала/квартиры,
-    // то кидает ошибку exists;
-    // исправить время (часовой пояс нужен +4)
+    @PostMapping(CREATE_ADDRESS) //TO DO: проверить порядок id
     public HandbookAddressesDTO createAddress(
+            @Valid
             @RequestParam String street,
             @RequestParam Integer number,
             @RequestParam(required=false) String literal,
@@ -57,18 +61,16 @@ public class HandbookAddressesController {
         String finalLiteral = literal;
         Integer finalFlat = flat;
 
-        handbookAddressesRepository
-                .findByStreetAndNumberAndLiteralAndFlat(street, number, literal, flat)
-                .ifPresent(existingAddresses -> {
-                    throw new BadRequestException2(
-                            String.format(
-                                    "Address \"%s\" \"%s\"%s%s already exists.",
-                                    street, number,
-                                    (!finalLiteral.isEmpty() ? String.format(" \"%s\"", finalLiteral) : ""),
-                                    (finalFlat != 0 ? String.format(" \"%s\"", finalFlat) : "")
-                            )
-                    );
-                });
+        if (handbookAddressesRepository.existsByStreetAndNumberAndLiteralAndFlat(street, number, literal, flat)) {
+            throw new BadRequestException2(
+                    String.format(
+                            "Address \"%s\" \"%s\"%s%s already exists.",
+                            street, number,
+                            (!finalLiteral.isEmpty() ? String.format(" \"%s\"", finalLiteral) : ""),
+                            (finalFlat != 0 ? String.format(" \"%s\"", finalFlat) : "")
+                    )
+            );
+        }
 
         HandbookAddressesEntity handbookAddresses = handbookAddressesRepository.saveAndFlush(
                 HandbookAddressesEntity.builder()
@@ -77,28 +79,28 @@ public class HandbookAddressesController {
                         .literal(literal)
                         .flat(flat)
                         .createdAt(Instant.now())
+                        .createdAtLocal(LocalDateTime.now(ZoneId.systemDefault()))
                         .build()
         );
 
         return handbookAddressesDTOFactory.makeHandbookAddressesDTO(handbookAddresses);
     }
 
-    @PatchMapping(EDIT_ADDRESS) //Если нужно поменять только улицу или только номер, то нужно исправить параметры на необязательные
+    @PatchMapping(EDIT_ADDRESS) //TO DO: упростить метод для изменения одного параметра ИЛИ нескольких
     public HandbookAddressesDTO editAddress(
-            @PathVariable("street") String street,
-            @PathVariable("number") Integer number,
+            @PathVariable(name = "street", required = false) String street,
+            @PathVariable(name = "number", required = false) int number,
             @RequestParam(required=false) String literal,
-            @RequestParam(required=false) Integer flat,
-            @RequestParam(required=false) String newStreet,
-            @RequestParam(required=false) Integer newNumber,
-            @RequestParam(required=false) String newLiteral,
-            @RequestParam(required=false) Integer newFlat) {
+            @RequestParam(required=false) int flat,
+            @RequestParam(required=false) @Size(max = 100, message = "Название новой улицы не должно превышать 100 символов") String newStreet,
+            @RequestParam(required=false) @Min(value = 0, message = "Новый номер дома должен быть положительным") Integer newNumber,
+            @RequestParam(required=false) @Size(max = 1, message = "Новый литерал не должен превышать 1 символа") String newLiteral,
+            @RequestParam(required=false) @Min(value = 0, message = "Новый номер квартиры должен быть положительным") Integer newFlat) {
 
-        literal = (literal == null) ? "" : literal;
-        flat = (flat == null) ? 0 : flat;
-
-        String finalLiteral = literal;
-        Integer finalFlat = flat;
+        String finalStreet = street != null ? street : "";
+        int finalNumber = number != 0 ? number : 0;
+        String finalLiteral = literal != null ? literal : "";
+        int finalFlat = flat != 0 ? flat : 0;
 
         HandbookAddressesEntity handbookAddresses = handbookAddressesRepository
                 .findByStreetAndNumberAndLiteralAndFlat(street, number, literal, flat)
@@ -106,31 +108,29 @@ public class HandbookAddressesController {
                         new NotFoundException2(
                                 String.format(
                                         "Address with \"%s\" \"%s\" \"%s\" \"%s\" does not exist.",
-                                        street, number,
+                                        (!finalStreet.isEmpty() ? String.format(" \"%s\"", finalStreet) : ""),
+                                        (finalNumber != 0 ? String.format(" \"%s\"", finalNumber) : ""),
                                         (!finalLiteral.isEmpty() ? String.format(" \"%s\"", finalLiteral) : ""),
                                         (finalFlat != 0 ? String.format(" \"%s\"", finalFlat) : "")
                                 )
                         )
                 );
 
-        newLiteral = (newLiteral == null) ? "" : newLiteral;
-        newFlat = (newFlat == null) ? 0 : newFlat;
-
-        String finalNewLiteral = newLiteral;
-        Integer finalNewFlat = newFlat;
-        handbookAddressesRepository
-                .findByStreetAndNumberAndLiteralAndFlat(newStreet, newNumber, newLiteral, newFlat)
-                .ifPresent(existingAddresses -> {
-                    throw new BadRequestException2(
+        String finalNewStreet = newStreet != null ? newStreet : "";
+        int finalNewNumber = newNumber != 0 ? newNumber : 0;
+        String finalNewLiteral = newLiteral != null ? newLiteral : "";
+        int finalNewFlat = newFlat != 0 ? newFlat : 0;
+        if (handbookAddressesRepository.existsByStreetAndNumberAndLiteralAndFlat(newStreet, newNumber, newLiteral, newFlat)) {
+            throw new BadRequestException2(
                             String.format(
                                     "Address \"%s\" \"%s\" \"%s\" \"%s\" already exists.",
-                                    (newStreet != null ? String.format(" \"%s\"", newStreet) : ""),
-                                    (newNumber != null ? String.format(" \"%s\"", newNumber) : ""),
+                                    (finalNewStreet.isEmpty() ? String.format(" \"%s\"", finalNewStreet) : ""),
+                                    (finalNewNumber != 0 ? String.format(" \"%s\"", finalNewNumber) : ""),
                                     (!finalNewLiteral.isEmpty() ? String.format(" \"%s\"", finalNewLiteral) : ""),
                                     (finalNewFlat != 0 ? String.format(" \"%s\"", finalNewFlat) : "")
                             )
                     );
-                });
+        }
 
         handbookAddresses.setStreet(newStreet);
         handbookAddresses.setNumber(newNumber);
@@ -142,6 +142,47 @@ public class HandbookAddressesController {
         return handbookAddressesDTOFactory.makeHandbookAddressesDTO(handbookAddresses);
     }
 
+    @GetMapping(GET_ALL_ADDRESSES)
+    public List<HandbookAddressesDTO> getAllAddresses(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "street") String[] sortBy) {
+
+        Sort sort = Sort.by(sortBy).ascending();
+
+        Page<HandbookAddressesEntity> allAddresses = handbookAddressesRepository
+                .findAll(PageRequest.of(page, size, sort));
+
+        return allAddresses.stream()
+                .map(handbookAddressesDTOFactory::makeHandbookAddressesDTO)
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping(HandbookAddressesController.GET_STREETS) //TO DO: выдает только один результат,
+    // на нескольких кидает ошибку
+    public List<HandbookAddressesDTO> getStreets(
+            @PathVariable("street") String street,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "number") String[] sortBy) {
+
+        Sort sort = Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size);
+
+        List<HandbookAddressesEntity> addresses = handbookAddressesRepository
+                .findByStreetOrderByNumberAsc(street, pageable);
+
+        if (addresses.isEmpty()) {
+            throw new NotFoundException2(
+                    String.format("Не найдено адресов для улицы \"%s\".", street)
+            );
+        }
+
+        return addresses.stream()
+                .map(handbookAddressesDTOFactory::makeHandbookAddressesDTO)
+                .collect(Collectors.toList());
+
+    }
 
     @GetMapping(HandbookAddressesController.GET_ADDRESS)
     public List<HandbookAddressesDTO> getStreet(
@@ -169,95 +210,46 @@ public class HandbookAddressesController {
                 .collect(Collectors.toList());
     }
 
-    @GetMapping(HandbookAddressesController.GET_STREETS) //TO DO: выдает только один результат, на нескольких кидает ошибку
-    public List<HandbookAddressesDTO> getStreets(
-            @PathVariable("street") String street,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "number") String[] sortBy) {
-
-        Sort sort = Sort.by(sortBy).ascending();
-        Pageable pageable = PageRequest.of(page, size);
-
-        List<HandbookAddressesEntity> addresses = handbookAddressesRepository
-                .findByStreetOrderByNumberAsc(street, pageable);
-
-        if (addresses.isEmpty()) {
-            throw new NotFoundException2(
-                    String.format("Не найдено адресов для улицы \"%s\".", street)
-            );
-        }
-
-        return addresses.stream()
-                .map(handbookAddressesDTOFactory::makeHandbookAddressesDTO)
-                .collect(Collectors.toList());
-
-    }
-
-    @GetMapping(GET_ALL_ADDRESSES)
-    public List<HandbookAddressesDTO> getAllAddresses(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "street") String[] sortBy) {
-
-        Sort sort = Sort.by(sortBy).ascending();
-
-        Page<HandbookAddressesEntity> allAddresses = handbookAddressesRepository
-                .findAll(PageRequest.of(page, size, sort));
-
-        return allAddresses.stream()
-                .map(handbookAddressesDTOFactory::makeHandbookAddressesDTO)
-                .collect(Collectors.toList());
-    }
-
-    @DeleteMapping(DELETE_ADDRESS) //TO DO: Не ищет адреса
+    @DeleteMapping(DELETE_ADDRESS)
     public ResponseEntity<HandbookAddressesDTO> deleteAddress(
             @PathVariable("street") String street,
             @PathVariable("number") Integer number,
             @RequestParam(required = false) String literal,
             @RequestParam(required = false) Integer flat) {
 
-        List<HandbookAddressesEntity> addresses = handbookAddressesRepository
-                .findByStreetAndNumber(street, number);
+        literal = (literal == null) ? "" : literal;
+        flat = (flat == null) ? 0 : flat;
 
-        if (literal == null && flat == null) {
-            // Удаляем только адреса с null literal и flat
-            addresses = addresses.stream()
-                    .filter(address -> address.getLiteral() == null && address.getFlat() == null)
-                    .collect(Collectors.toList());
-        } else if (literal != null && flat == null) {
-            // Удаляем только адреса с указанным literal и null flat
-            addresses = addresses.stream()
-                    .filter(address -> literal.equals(address.getLiteral()) && address.getFlat() == null)
-                    .collect(Collectors.toList());
-        } else if (literal == null && flat != null) {
-            // Удаляем только адреса с null literal и указанным flat
-            addresses = addresses.stream()
-                    .filter(address -> address.getLiteral() == null && flat.equals(address.getFlat()))
-                    .collect(Collectors.toList());
-        } else if (literal != null && flat != null) {
-            // Удаляем только адреса с указанными literal и flat
-            addresses = addresses.stream()
-                    .filter(address -> literal.equals(address.getLiteral()) && flat.equals(address.getFlat()))
-                    .collect(Collectors.toList());
-        }
+        String finalLiteral = literal;
+        Integer finalFlat = flat;
 
-        // Если после фильтрации список пуст, выбрасываем исключение
-        if (addresses.isEmpty()) {
-            throw new NotFoundException2(
-                    String.format(
-                            "Address with \"%s\" \"%s\"%s%s does not exist.",
-                            street, number,
-                            (literal != null && !literal.isEmpty() ? String.format(" \"%s\"", literal) : ""),
-                            (flat != null ? String.format(" \"%s\"", flat) : "")
-                    )
-            );
-        }
+        HandbookAddressesEntity handbookAddresses = handbookAddressesRepository
+                .findByStreetAndNumberAndLiteralAndFlat(street, number, literal, flat)
+                .orElseThrow(() ->
+                        new NotFoundException2(
+                                String.format(
+                                        "Address with \"%s\" \"%s\" \"%s\" \"%s\" does not exist.",
+                                        street, number,
+                                        (!finalLiteral.isEmpty() ? String.format(" \"%s\"", finalLiteral) : ""),
+                                        (finalFlat != 0 ? String.format(" \"%s\"", finalFlat) : "")
+                                )
+                        )
+                );
 
-        for (HandbookAddressesEntity address : addresses) {
-            handbookAddressesRepository.delete(address);
-            System.out.println("Deleted Address: " + address.getStreet() + " " + address.getNumber() + " " + address.getLiteral() + " " + address.getFlat());
-        }
+
+        handbookAddressesRepository.delete(handbookAddresses);
+        System.out.println("Deleted Address: " + handbookAddresses.getStreet() + " " + handbookAddresses.getNumber() +
+                " " + handbookAddresses.getLiteral() + " " + handbookAddresses.getFlat());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping(DELETE_ALL_ADDRESS)
+    public ResponseEntity<HandbookAddressesDTO> deleteAllAddresses() {
+
+        handbookAddressesRepository.deleteAll();
+
+        System.out.println("Deleted All Addresses");
 
         return ResponseEntity.noContent().build();
     }
