@@ -34,17 +34,20 @@ public class MetersEntity extends MetersDTO {
 
     @Builder.Default
     @Column (name = "column_4_creation_date")
-    Instant creationDate = Instant.now();
+    Instant createdAt = Instant.now();
 
     @Column (name = "column_5_utc_date", nullable = false)
     private LocalDateTime createdAtLocal = LocalDateTime.now(ZoneId.systemDefault());
 
+    @Column (name = "column_6_updated_date")
+    Instant updatedAt = Instant.now();
+
     @ManyToOne
-    @JoinColumn (name = "column_6_address_id")
+    @JoinColumn (name = "column_7_address_id")
     private HandbookAddressesEntity address;
 
     @ManyToOne
-    @JoinColumn (name = "column_7_type_id")
+    @JoinColumn (name = "column_8_type_id")
     private HandbookTypeMetersEntity type;
 
     @OneToMany(mappedBy = "meter")

@@ -1,5 +1,6 @@
 package com.example.testtask.api.controllers;
 
+import com.example.testtask.api.dto.HandbookAddressesDTO;
 import com.example.testtask.api.dto.MetersDTO;
 import com.example.testtask.api.exceptions.BadRequestException2;
 import com.example.testtask.api.exceptions.NotFoundException2;
@@ -9,13 +10,23 @@ import com.example.testtask.store.entities.MetersEntity;
 import com.example.testtask.store.repositories.HandbookAddressesRepository;
 import com.example.testtask.store.repositories.MetersRepository;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -33,11 +44,14 @@ public class MetersController {
     public static final String CREATE_METERS = "/api/meters";
     public static final String EDIT_METERS = "/api/meters/{metersSerialNumber}";
     public static final String EDIT_DATE = "/api/meters/{metersSerialNumber}/{installationDate}";
-    public static final String GET_METERS = "/api/meters/{metersSerialNumber}";
-    public static final String DELETE_METERS = "/api/meters/{metersSerialNumber}";
+    public static final String GET_ALL_METERS = "/api/meters";
+    public static final String GET_METER = "/api/meters/{metersSerialNumber}";
+    public static final String DELETE_METER = "/api/meters/{metersSerialNumber}";
+    public static final String DELETE_ALL_METERS = "/api/meters";
 
     @PostMapping(CREATE_METERS)
     public MetersDTO createMetersSerialNumber(
+            @Valid
             @RequestParam String metersSerialNumber,
             @RequestParam String street,
             @RequestParam Integer number,
@@ -56,12 +70,20 @@ public class MetersController {
                     );
                 });
 
+        literal = (literal == null) ? "" : literal;
+        flat = (flat == null) ? 0 : flat;
+
+        String finalLiteral = literal;
+        Integer finalFlat = flat;
+
         HandbookAddressesEntity address = handbookAddressesRepository
-                .findByStreetAndNumberAndLiteralAndFlat(street, number, literal, flat)
+                .findByStreetAndNumberAndLiteralAndFlat(street, number, finalLiteral, finalFlat)
                 .orElseThrow(() -> new NotFoundException2(
                         String.format(
-                                "Address \"%s %d %s %d\" does not exist.",
-                                street, number, literal, flat
+                                "Address \"%s\" \"%s\"%s%s  does not exist.",
+                                street, number,
+                                (!finalLiteral.isEmpty() ? String.format(" \"%s\"", finalLiteral) : ""),
+                                (finalFlat != 0 ? String.format(" \"%s\"", finalFlat) : "")
                         )
                 ));
 
@@ -70,6 +92,8 @@ public class MetersController {
                         .metersSerialNumber(metersSerialNumber)
                         .address(address)
                         .installationDate(installationDate)
+                        .createdAt(Instant.now())
+                        .createdAtLocal(LocalDateTime.now(ZoneId.systemDefault()))
                         .build()
         );
 
@@ -79,7 +103,9 @@ public class MetersController {
     @PatchMapping(EDIT_METERS)
     public MetersDTO editMeter(
             @PathVariable("metersSerialNumber") String metersSerialNumber,
-            @RequestParam String newMetersSerialNumber) {
+            @RequestParam
+            @Size(max = 100, message = "Серийный номер прибора не должен превышать 100 символов")
+            String newMetersSerialNumber) {
 
         MetersEntity meters = metersRepository
                 .findByMetersSerialNumber(metersSerialNumber)
@@ -102,6 +128,8 @@ public class MetersController {
                             )
                     );
                 });
+
+        meters.setUpdatedAt(Instant.now());
 
         meters.setMetersSerialNumber(newMetersSerialNumber);
 
@@ -128,7 +156,7 @@ public class MetersController {
                 );
 
         MetersEntity meters_installation_date = metersRepository
-                .findByMetersSerialNumberAndInstallationDate(metersSerialNumber, newInstallationDate)
+                .findByMetersSerialNumberAndInstallationDate(metersSerialNumber, installationDate)
                 .orElseThrow(() ->
                         new NotFoundException2(
                                 String.format(
@@ -149,6 +177,8 @@ public class MetersController {
                     );
                 });
 
+        meters.setUpdatedAt(Instant.now());
+
         meters.setInstallationDate(newInstallationDate);
 
         meters = metersRepository.saveAndFlush(meters);
@@ -156,7 +186,30 @@ public class MetersController {
         return metersDTOFactory.makeMetersDTO(meters);
     }
 
-    @GetMapping(GET_METERS)
+    @GetMapping(GET_ALL_METERS)
+    public List<MetersDTO> getAllMeters(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "metersSerialNumber") String[] sortBy) {
+
+            Sort sort = Sort.by(sortBy).ascending();
+
+            Page<MetersEntity> allMeters = metersRepository
+            .findAll(PageRequest.of(page, size, sort));
+
+            if (allMeters.isEmpty()) {
+                throw new NotFoundException2(
+                        "Не найдено приборов учета"
+                );
+            }
+
+        return allMeters.stream()
+                .map(metersDTOFactory::makeMetersDTO)
+                .collect(Collectors.toList());
+
+    }
+
+    @GetMapping(GET_METER)
     public MetersDTO getTitleMeters(
             @PathVariable("metersSerialNumber") String metersSerialNumber) {
 
@@ -176,7 +229,7 @@ public class MetersController {
         return metersDTOFactory.makeMetersDTO(meters);
     }
 
-    @DeleteMapping(DELETE_METERS)
+    @DeleteMapping(DELETE_METER)
     public ResponseEntity<MetersDTO> deleteMeters(
             @PathVariable("metersSerialNumber") String metersSerialNumber) {
 
@@ -197,4 +250,15 @@ public class MetersController {
 
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping(DELETE_ALL_METERS)
+    public ResponseEntity<MetersDTO> deleteAllMeters() {
+
+        metersRepository.deleteAll();
+
+        System.out.println("Deleted All Meters");
+
+        return ResponseEntity.noContent().build();
+    }
+
 }

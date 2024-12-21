@@ -1,6 +1,7 @@
 package com.example.testtask.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -39,6 +40,8 @@ public class HandbookAddressesDTO {
     @NonNull
     @JsonProperty("creation_date")
     Instant createdAt = Instant.now();
+
+    Instant updatedAt = Instant.now();
 
     @NonNull
     LocalDateTime createdAtLocal = LocalDateTime.now(ZoneId.systemDefault());

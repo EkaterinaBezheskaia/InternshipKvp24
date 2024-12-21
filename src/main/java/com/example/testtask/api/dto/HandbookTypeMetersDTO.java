@@ -27,9 +27,10 @@ public class HandbookTypeMetersDTO {
 
     @NonNull
     @JsonProperty("creation_date")
-    Instant creationDate = Instant.now();
+    Instant createdAt = Instant.now();
 
     @NonNull
     LocalDateTime createdAtLocal = LocalDateTime.now(ZoneId.systemDefault());
 
+    Instant updatedAt = Instant.now();
 }

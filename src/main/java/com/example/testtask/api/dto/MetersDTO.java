@@ -31,9 +31,12 @@ public class MetersDTO {
 
     @NonNull
     @JsonProperty("creation_date")
-    Instant creationDate = Instant.now();
+    Instant createdAt = Instant.now();
 
     @NonNull
     LocalDateTime createdAtLocal = LocalDateTime.now(ZoneId.systemDefault());
+
+    @NonNull
+    Instant updatedAt = Instant.now();
 
 }

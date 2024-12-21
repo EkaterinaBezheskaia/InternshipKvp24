@@ -36,4 +36,6 @@ public class MeterReadingsDTO {
     @NonNull
     LocalDateTime createdAtLocal = LocalDateTime.now(ZoneId.systemDefault());
 
+    Instant updatedAt = Instant.now();
+
 }

@@ -42,6 +42,9 @@ public class HandbookAddressesEntity extends HandbookAddressesDTO {
     @Column (name = "column_6_located_date", nullable = false)
     private LocalDateTime createdAtLocal = LocalDateTime.now(ZoneId.systemDefault());
 
+    @Column (name = "column_7_updated_date")
+    Instant updatedAt = Instant.now();
+
     @OneToMany(mappedBy = "address")
     private List<MetersEntity> meters;
 

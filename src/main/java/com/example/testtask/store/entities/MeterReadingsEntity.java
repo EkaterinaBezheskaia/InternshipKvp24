@@ -39,8 +39,11 @@ public class MeterReadingsEntity extends MeterReadingsDTO {
     @Column (name = "column_4_UTC_date", nullable = false)
     private LocalDateTime createdAtLocal = LocalDateTime.now(ZoneId.systemDefault());
 
+    @Column (name = "column_5_updated_date")
+    Instant updatedAt = Instant.now();
+
     @ManyToOne
-    @JoinColumn (name = "column_5_meter_id")
+    @JoinColumn (name = "column_6_meter_id")
     private MetersEntity meter;
 
 }

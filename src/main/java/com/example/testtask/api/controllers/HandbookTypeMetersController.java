@@ -1,5 +1,6 @@
 package com.example.testtask.api.controllers;
 
+import com.example.testtask.api.dto.HandbookAddressesDTO;
 import com.example.testtask.api.dto.HandbookTypeMetersDTO;
 import com.example.testtask.api.exceptions.BadRequestException2;
 import com.example.testtask.api.exceptions.NotFoundException2;
@@ -7,6 +8,8 @@ import com.example.testtask.api.factories.HandbookTypeMetersDTOFactory;
 import com.example.testtask.store.entities.HandbookTypeMetersEntity;
 import com.example.testtask.store.repositories.HandbookTypeMetersRepository;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -17,6 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,8 +30,6 @@ import java.util.stream.Collectors;
 @Transactional
 @RestController
 
-//TO DO: Сделать валидацию для обработки ожидаемых форматов данных с помощью библиотеки javax.validation
-
 public class HandbookTypeMetersController {
 
     HandbookTypeMetersRepository handbookTypeMetersRepository;
@@ -34,12 +37,14 @@ public class HandbookTypeMetersController {
 
     public static final String CREATE_TYPE_METER = "/api/typeMeters";
     public static final String EDIT_TYPE_METER = "/api/typeMeters/{titleTypeMeters}";
-    public static final String GET_TYPE_METER = "/api/typeMeters/{titleTypeMeters}";
     public static final String GET_ALL_TYPE_METERS = "/api/typeMeters";
+    public static final String GET_TYPE_METER = "/api/typeMeters/{titleTypeMeters}";
     public static final String DELETE_TYPE_METER = "/api/typeMeters/{titleTypeMeters}";
+    public static final String DELETE_ALL_TYPES_METER = "/api/typeMeters/reset";
 
     @PostMapping(CREATE_TYPE_METER)
     public HandbookTypeMetersDTO createTypeMeter(
+            @Valid
             @RequestParam String titleTypeMeters) {
 
         handbookTypeMetersRepository
@@ -57,6 +62,7 @@ public class HandbookTypeMetersController {
                 HandbookTypeMetersEntity.builder()
                         .titleTypeMeters(titleTypeMeters)
                         .createdAt(Instant.now())
+                        .createdAtLocal(LocalDateTime.now(ZoneId.systemDefault()))
                         .build()
         );
 
@@ -66,7 +72,9 @@ public class HandbookTypeMetersController {
     @PatchMapping(EDIT_TYPE_METER)
     public HandbookTypeMetersDTO editTypeMeter(
             @PathVariable("titleTypeMeters") String titleTypeMeters,
-            @RequestParam String newTitleTypeMeters) {
+            @RequestParam
+            @Size(max = 100, message = "Название типа прибора не должно превышать 100 символов")
+            String newTitleTypeMeters) {
 
         HandbookTypeMetersEntity handbookTypeMeters = handbookTypeMetersRepository
                 .findByTitleTypeMeters(titleTypeMeters)
@@ -90,11 +98,36 @@ public class HandbookTypeMetersController {
                     );
                 });
 
+
+        handbookTypeMeters.setUpdatedAt(Instant.now());
+
         handbookTypeMeters.setTitleTypeMeters(newTitleTypeMeters);
 
         handbookTypeMeters = handbookTypeMetersRepository.saveAndFlush(handbookTypeMeters);
 
         return handbookTypeMetersDTOFactory.makeHandbookTypeMetersDTO(handbookTypeMeters);
+    }
+
+    @GetMapping(GET_ALL_TYPE_METERS)
+    public List<HandbookTypeMetersDTO> getAllTypeMeters(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "titleTypeMeters") String sortBy) {
+
+        Sort sort = Sort.by(sortBy).ascending();
+
+        Page<HandbookTypeMetersEntity> allTypeMeters = handbookTypeMetersRepository
+                .findAll(PageRequest.of(page, size, sort));
+
+        if (allTypeMeters.isEmpty()) {
+            throw new NotFoundException2(
+                    "Не найдено типов приборов учета"
+            );
+        }
+
+        return allTypeMeters.stream()
+                .map(handbookTypeMetersDTOFactory::makeHandbookTypeMetersDTO)
+                .collect(Collectors.toList());
     }
 
     @GetMapping(HandbookTypeMetersController.GET_TYPE_METER)
@@ -117,22 +150,6 @@ public class HandbookTypeMetersController {
         return handbookTypeMetersDTOFactory.makeHandbookTypeMetersDTO(handbookTypeMeters);
     }
 
-    @GetMapping(GET_ALL_TYPE_METERS)
-    public List<HandbookTypeMetersDTO> getAllTypeMeters(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "titleTypeMeters") String sortBy) {
-
-        Sort sort = Sort.by(sortBy).ascending();
-
-        Page<HandbookTypeMetersEntity> allTypeMeters = handbookTypeMetersRepository
-                .findAll(PageRequest.of(page, size, sort));
-
-        return allTypeMeters.stream()
-                .map(handbookTypeMetersDTOFactory::makeHandbookTypeMetersDTO)
-                .collect(Collectors.toList());
-    }
-
     @DeleteMapping(DELETE_TYPE_METER)
     public ResponseEntity<HandbookTypeMetersDTO> deleteTypeMeters(
             @PathVariable("titleTypeMeters") String titleTypeMeters) {
@@ -151,6 +168,16 @@ public class HandbookTypeMetersController {
         handbookTypeMetersRepository.delete(handbookTypeMeters);
 
         System.out.println("Deleted Type Meter: " + handbookTypeMeters.getTitleTypeMeters());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping(DELETE_ALL_TYPES_METER)
+    public ResponseEntity<HandbookAddressesDTO> deleteAllTypeMeters() {
+
+        handbookTypeMetersRepository.deleteAll();
+
+        System.out.println("Deleted All Addresses");
 
         return ResponseEntity.noContent().build();
     }

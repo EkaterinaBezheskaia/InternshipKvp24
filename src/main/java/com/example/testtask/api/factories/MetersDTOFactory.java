@@ -13,7 +13,9 @@ public class MetersDTOFactory {
                 .id(entity.getId())
                 .metersSerialNumber(entity.getMetersSerialNumber())
                 .installationDate(entity.getInstallationDate())
-                .creationDate(entity.getCreationDate())
+                .createdAt(entity.getCreatedAt())
+                .createdAtLocal(entity.getCreatedAtLocal())
+                .updatedAt(entity.getUpdatedAt())
                 .build();
     }
 }

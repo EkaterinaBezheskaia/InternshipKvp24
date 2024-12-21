@@ -12,8 +12,9 @@ public class HandbookTypeMetersDTOFactory {
         return HandbookTypeMetersDTO.fileDtoBuilder()
                 .id(entity.getId())
                 .titleTypeMeters(entity.getTitleTypeMeters())
-                .creationDate(entity.getCreationDate())
+                .createdAt(entity.getCreatedAt())
                 .createdAtLocal(entity.getCreatedAtLocal())
+                .updatedAt(entity.getUpdatedAt())
                 .build();
     }
 }

@@ -32,8 +32,6 @@ import java.util.stream.Collectors;
 @Transactional
 @RestController
 
-//TO DO: Сделать валидацию для обработки ожидаемых форматов данных с помощью библиотеки javax.validation
-
 public class HandbookAddressesController {
 
     HandbookAddressesRepository handbookAddressesRepository;
@@ -45,9 +43,9 @@ public class HandbookAddressesController {
     public static final String GET_STREETS = "/api/addresses/{street}";
     public static final String GET_ADDRESS = "/api/addresses/{street}/{number}";
     public static final String DELETE_ADDRESS = "/api/addresses/{street}/{number}";
-    public static final String DELETE_ALL_ADDRESS = "/api/addresses";
+    public static final String DELETE_ALL_ADDRESS = "/api/reset";
 
-    @PostMapping(CREATE_ADDRESS) //TO DO: проверить порядок id
+    @PostMapping(CREATE_ADDRESS)
     public HandbookAddressesDTO createAddress(
             @Valid
             @RequestParam String street,
@@ -86,7 +84,7 @@ public class HandbookAddressesController {
         return handbookAddressesDTOFactory.makeHandbookAddressesDTO(handbookAddresses);
     }
 
-    @PatchMapping(EDIT_ADDRESS) //TO DO: упростить метод для изменения одного параметра ИЛИ нескольких
+    @PatchMapping(EDIT_ADDRESS)
     public HandbookAddressesDTO editAddress(
             @PathVariable(name = "street", required = false) String street,
             @PathVariable(name = "number", required = false) int number,
@@ -132,6 +130,8 @@ public class HandbookAddressesController {
                     );
         }
 
+        handbookAddresses.setUpdatedAt(Instant.now());
+
         handbookAddresses.setStreet(newStreet);
         handbookAddresses.setNumber(newNumber);
         handbookAddresses.setLiteral(newLiteral);
@@ -153,13 +153,18 @@ public class HandbookAddressesController {
         Page<HandbookAddressesEntity> allAddresses = handbookAddressesRepository
                 .findAll(PageRequest.of(page, size, sort));
 
+        if (allAddresses.isEmpty()) {
+            throw new NotFoundException2(
+                    "Не найдено адресов"
+            );
+        }
+
         return allAddresses.stream()
                 .map(handbookAddressesDTOFactory::makeHandbookAddressesDTO)
                 .collect(Collectors.toList());
     }
 
-    @GetMapping(HandbookAddressesController.GET_STREETS) //TO DO: выдает только один результат,
-    // на нескольких кидает ошибку
+    @GetMapping(HandbookAddressesController.GET_STREETS)
     public List<HandbookAddressesDTO> getStreets(
             @PathVariable("street") String street,
             @RequestParam(defaultValue = "0") int page,
