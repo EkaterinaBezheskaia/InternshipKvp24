@@ -32,10 +32,10 @@ public class MetersEntity extends MetersDTO {
     private LocalDate installationDate;
 
     @Builder.Default
-    @Column (name = "column_4_creation_date")
+    @Column (name = "column_4_utc_date")
     Instant createdAt = Instant.now();
 
-    @Column (name = "column_5_utc_date", nullable = false)
+    @Column (name = "column_5_located_date", nullable = false)
     private LocalDateTime createdAtLocal = LocalDateTime.now(ZoneId.systemDefault());
 
     @Column (name = "column_6_updated_date")

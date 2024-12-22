@@ -4,6 +4,7 @@ import com.example.testtask.api.dto.MeterReadingsDTO;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -30,13 +31,13 @@ public class MeterReadingsEntity extends MeterReadingsDTO {
     private Month readingsDate;
 
     @Column (name = "column_2_readins", nullable = false)
-    private Double readings;
+    private BigDecimal readings;
 
     @Builder.Default
-    @Column (name = "column_3_creation_date")
+    @Column (name = "column_3_utc_date")
     Instant creationDate = Instant.now();
 
-    @Column (name = "column_4_UTC_date", nullable = false)
+    @Column (name = "column_4_located_date", nullable = false)
     private LocalDateTime createdAtLocal = LocalDateTime.now(ZoneId.systemDefault());
 
     @Column (name = "column_5_updated_date")

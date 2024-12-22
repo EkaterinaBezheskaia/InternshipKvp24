@@ -2,6 +2,7 @@ package com.example.testtask.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -19,10 +20,11 @@ import java.time.ZoneId;
 public class HandbookMeterTypesDTO {
 
     @NotNull(message = "ID не должен быть пустым")
-    long id;
+    Long id;
 
     @NotNull(message = "Название типа прибора не должно быть пустым")
     @Size(max = 100, message = "Название типа прибора не должно превышать 100 символов")
+    @Pattern(regexp ="^[А-Я].+", message = "Должно начинаться с заглавной буквы.")
     String meterTypeTitle;
 
     @NonNull

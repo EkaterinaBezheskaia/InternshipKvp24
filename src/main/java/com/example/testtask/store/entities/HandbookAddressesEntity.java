@@ -22,7 +22,7 @@ public class HandbookAddressesEntity extends HandbookAddressesDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column (name = "column_0_id")
-    private long id;
+    private Long id;
 
     @Column (name = "column_1_street", nullable = false)
     private String street;

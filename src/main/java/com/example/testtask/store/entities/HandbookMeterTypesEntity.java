@@ -22,7 +22,7 @@ public class HandbookMeterTypesEntity extends HandbookMeterTypesDTO {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         @Column (name = "column_0_id")
-        private long id;
+        private Long id;
 
         @Column (name = "column_1_title_type_meters", unique = true)
         private String meterTypeTitle;

@@ -69,10 +69,9 @@ public class HandbookMeterTypesController {
 
     @PatchMapping(EDIT_METER_TYPE)
     public HandbookMeterTypesDTO editMeterType(
+            @Valid
             @PathVariable("meterTypeTitle") String meterTypeTitle,
-            @RequestParam
-            @Size(max = 100, message = "Название типа прибора не должно превышать 100 символов")
-            String newMeterTypeTitle) {
+            @RequestParam String newMeterTypeTitle) {
 
         HandbookMeterTypesEntity meterType = handbookMeterTypesRepository
                 .findByMeterTypeTitle(meterTypeTitle)
@@ -106,6 +105,7 @@ public class HandbookMeterTypesController {
 
     @GetMapping(GET_ALL_METER_TYPES)
     public List<HandbookMeterTypesDTO> getAllMeterTypes(
+            @Valid
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "title") String sortBy) {
@@ -126,8 +126,9 @@ public class HandbookMeterTypesController {
                 .collect(Collectors.toList());
     }
 
-    @ GetMapping(GET_METER_TYPE)
+    @GetMapping(GET_METER_TYPE)
     public HandbookMeterTypesDTO getMeterType(
+            @Valid
             @PathVariable("meterTypeTitle") String meterTypeTitle) {
 
         HandbookMeterTypesEntity meterType = handbookMeterTypesRepository
@@ -148,6 +149,7 @@ public class HandbookMeterTypesController {
 
     @DeleteMapping(DELETE_METER_TYPE)
     public ResponseEntity<HandbookMeterTypesDTO> deleteMeterType(
+            @Valid
             @PathVariable("meterTypeTitle") String meterTypeTitle) {
 
         HandbookMeterTypesEntity meterType = handbookMeterTypesRepository

@@ -1,9 +1,9 @@
 package com.example.testtask.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -21,10 +21,11 @@ import java.time.ZoneId;
 public class HandbookAddressesDTO {
 
     @NotNull(message = "ID не должен быть пустым")
-    long id;
+    Long id;
 
     @NotNull(message = "Улица не должна быть пустой")
     @Size(max = 100, message = "Название улицы не должно превышать 100 символов")
+    @Pattern(regexp ="^[А-Я].+", message = "Должно начинаться с заглавной буквы.")
     String street;
 
     @NotNull(message = "Номер не должен быть пустым")
@@ -32,6 +33,7 @@ public class HandbookAddressesDTO {
     int number;
 
     @Size(max = 1, message = "Литерал не должен превышать 1 символа")
+    @Pattern(regexp = "^[А-ЯЁ]+$", message = "Должно состоять только из заглавных букв.")
     String literal;
 
     @Min(value = 0, message = "Номер квартиры должен быть положительным")

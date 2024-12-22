@@ -8,6 +8,8 @@ import com.example.testtask.store.entities.MeterReadingsEntity;
 import com.example.testtask.store.entities.MetersEntity;
 import com.example.testtask.store.repositories.MeterReadingsRepository;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Digits;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -17,6 +19,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -29,8 +33,6 @@ import java.util.stream.Collectors;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Transactional
 @RestController
-
-//TO DO: Сделать валидацию для обработки ожидаемых форматов данных с помощью библиотеки javax.validation
 
 public class MeterReadingsController {
 
@@ -46,9 +48,10 @@ public class MeterReadingsController {
 
     @PostMapping(CREATE_METER_READINGS)
     public MeterReadingsDTO createMeterReadingsNumber(
+            @Valid
             @PathVariable("meter") MetersEntity meter,
             @PathVariable("readingsDate") Month readingsDate,
-            @RequestParam double readings) {
+            @RequestParam BigDecimal readings) {
 
         meterReadingsRepository
                 .findByMeterAndReadingsDate(meter, readingsDate)
@@ -61,10 +64,12 @@ public class MeterReadingsController {
                     );
                 });
 
+        BigDecimal roundedReadings = readings.setScale(3, RoundingMode.HALF_UP);
+
         MeterReadingsEntity meterReadings = meterReadingsRepository.saveAndFlush(
                 MeterReadingsEntity.builder()
                         .readingsDate(readingsDate)
-                        .readings(readings)
+                        .readings(roundedReadings) // Используем округленное значение
                         .updatedAt(Instant.now())
                         .createdAtLocal(LocalDateTime.now(ZoneId.systemDefault()))
                         .build()
@@ -75,9 +80,10 @@ public class MeterReadingsController {
 
     @PatchMapping(EDIT_METER_READINGS)
     public MeterReadingsDTO editMeterReadings(
+            @Valid
             @PathVariable("meter") MetersEntity meter,
             @PathVariable("readingsDate") Month readingsDate,
-            @RequestParam double readings) {
+            @RequestParam BigDecimal readings) {
 
         MeterReadingsEntity meterReadings = meterReadingsRepository
                 .findByMeterAndReadingsDate(meter, readingsDate)
@@ -101,6 +107,7 @@ public class MeterReadingsController {
 
     @GetMapping(GET_ALL_METER_READINGS)
     public List<MeterReadingsDTO> getMeterReadings(
+            @Valid
             @PathVariable("meter") MetersEntity meter,
             @RequestParam("readings") Long[] sortBy,
             @RequestParam(defaultValue = "0") int page,
@@ -124,6 +131,7 @@ public class MeterReadingsController {
 
     @GetMapping(GET_METER_READINGS)
     public MeterReadingsDTO getMeterReadings(
+            @Valid
             @PathVariable("meter") MetersEntity meter,
             @PathVariable("readingsDate") Month readingsDate) {
 
@@ -143,9 +151,10 @@ public class MeterReadingsController {
 
     @DeleteMapping(DELETE_METER_READINGS)
     public ResponseEntity<MeterReadingsDTO> deleteMeterReadings(
+            @Valid
             @PathVariable("meter") MetersEntity meter,
             @PathVariable("readingsDate") Month readingsDate,
-            @RequestParam Long readings) {
+            @RequestParam BigDecimal readings) {
 
         MeterReadingsEntity meterReadings = meterReadingsRepository
                 .findByMeterAndReadingsDate(meter, readingsDate)

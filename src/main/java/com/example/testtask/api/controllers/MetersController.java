@@ -10,6 +10,7 @@ import com.example.testtask.store.repositories.HandbookAddressesRepository;
 import com.example.testtask.store.repositories.MetersRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -99,10 +100,9 @@ public class MetersController {
 
     @PatchMapping(EDIT_METERS)
     public MetersDTO editMeter(
+            @Valid
             @PathVariable("metersSerialNumber") String metersSerialNumber,
-            @RequestParam
-            @Size(max = 100, message = "Серийный номер прибора не должен превышать 100 символов")
-            String newMetersSerialNumber) {
+            @RequestParam String newMetersSerialNumber) {
 
         MetersEntity meters = metersRepository
                 .findByMetersSerialNumber(metersSerialNumber)
@@ -137,6 +137,7 @@ public class MetersController {
 
     @PatchMapping(EDIT_DATE)
     public MetersDTO editDate(
+            @Valid
             @PathVariable("metersSerialNumber") String metersSerialNumber,
             @PathVariable("installationDate") LocalDate installationDate,
             @RequestParam LocalDate newInstallationDate) {
@@ -185,6 +186,7 @@ public class MetersController {
 
     @GetMapping(GET_ALL_METERS)
     public List<MetersDTO> getAllMeters(
+            @Valid
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "metersSerialNumber") String[] sortBy) {
@@ -208,6 +210,7 @@ public class MetersController {
 
     @GetMapping(GET_METER)
     public MetersDTO getTitleMeters(
+            @Valid
             @PathVariable("metersSerialNumber") String metersSerialNumber) {
 
         MetersEntity meters = metersRepository
@@ -228,6 +231,7 @@ public class MetersController {
 
     @DeleteMapping(DELETE_METER)
     public ResponseEntity<MetersDTO> deleteMeters(
+            @Valid
             @PathVariable("metersSerialNumber") String metersSerialNumber) {
 
         MetersEntity meters = metersRepository

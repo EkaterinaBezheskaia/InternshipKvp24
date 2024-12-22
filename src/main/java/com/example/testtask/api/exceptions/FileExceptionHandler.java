@@ -24,9 +24,9 @@ public class FileExceptionHandler extends ResponseStatusExceptionHandler {
     @Nullable
     public ResponseEntity<Object> exception(Exception ex, WebRequest request) {
 
-        log.error("Exception occurred: ", ex);
+        log.error("Произошло исключение: ", ex);
 
-        String errorMessage = "Access denied: " + ex.getMessage();
+        String errorMessage = "Доступ отклонен: " + ex.getMessage();
         return new ResponseEntity<>(
                 errorMessage,
                 new HttpHeaders(),
@@ -37,14 +37,14 @@ public class FileExceptionHandler extends ResponseStatusExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorDTO> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        log.error("Validation error: ", ex);
+        log.error("Ошибка валидации: ", ex);
 
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getFieldErrors().forEach(error ->
                 errors.put(error.getField(), error.getDefaultMessage())
         );
 
-        StringBuilder errorMessage = new StringBuilder("Validation failed: ");
+        StringBuilder errorMessage = new StringBuilder("Не удалось выполнить проверку: ");
         errors.forEach((field, message) ->
                 errorMessage.append(field).append(": ").append(message).append("; ")
         );
@@ -52,7 +52,7 @@ public class FileExceptionHandler extends ResponseStatusExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ErrorDTO.builder()
-                        .error("Validation Error")
+                        .error("Ошибка валидации")
                         .errorDescription(errorMessage.toString())
                         .build());
     }

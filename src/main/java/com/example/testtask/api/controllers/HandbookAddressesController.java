@@ -86,14 +86,15 @@ public class HandbookAddressesController {
 
     @PatchMapping(EDIT_ADDRESS)
     public HandbookAddressesDTO editAddress(
+            @Valid
             @PathVariable(name = "street", required = false) String street,
             @PathVariable(name = "number", required = false) int number,
             @RequestParam(required=false) String literal,
             @RequestParam(required=false) int flat,
-            @RequestParam(required=false) @Size(max = 100, message = "Название новой улицы не должно превышать 100 символов") String newStreet,
-            @RequestParam(required=false) @Min(value = 0, message = "Новый номер дома должен быть положительным") int newNumber,
-            @RequestParam(required=false) @Size(max = 1, message = "Новый литерал не должен превышать 1 символа") String newLiteral,
-            @RequestParam(required=false) @Min(value = 0, message = "Новый номер квартиры должен быть положительным") int newFlat) {
+            @RequestParam(required=false) String newStreet,
+            @RequestParam(required=false) int newNumber,
+            @RequestParam(required=false) String newLiteral,
+            @RequestParam(required=false) int newFlat) {
 
         String finalStreet = street != null ? street : "";
         int finalNumber = number != 0 ? number : 0;
@@ -144,6 +145,7 @@ public class HandbookAddressesController {
 
     @GetMapping(GET_ALL_ADDRESSES)
     public List<HandbookAddressesDTO> getAllAddresses(
+            @Valid
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "street") String[] sortBy) {
@@ -166,6 +168,7 @@ public class HandbookAddressesController {
 
     @GetMapping(HandbookAddressesController.GET_STREETS)
     public List<HandbookAddressesDTO> getStreets(
+            @Valid
             @PathVariable("street") String street,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -194,6 +197,7 @@ public class HandbookAddressesController {
 
     @GetMapping(HandbookAddressesController.GET_ADDRESS)
     public List<HandbookAddressesDTO> getStreet(
+            @Valid
             @PathVariable("street") String street,
             @PathVariable("number") int number,
             @RequestParam(required = false) String literal,
@@ -223,6 +227,7 @@ public class HandbookAddressesController {
 
     @DeleteMapping(DELETE_ADDRESS)
     public ResponseEntity<HandbookAddressesDTO> deleteAddress(
+            @Valid
             @PathVariable("street") String street,
             @PathVariable("number") int number,
             @RequestParam(required = false) String literal,
@@ -266,6 +271,7 @@ public class HandbookAddressesController {
     }
 
 }
+
 
 
 
