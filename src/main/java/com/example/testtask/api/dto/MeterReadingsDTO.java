@@ -20,14 +20,14 @@ import java.time.ZoneId;
 public class MeterReadingsDTO {
 
     @NotNull(message = "ID не должен быть пустым")
-    Long id;
+    long id;
 
     @NotNull(message = "Значение не должно быть пустым")
     Month readingsDate;
 
     @NotNull(message = "Значение не должно быть пустым")
     @Digits(integer = 10, fraction = 3, message = "Значение должно быть в формате 0.001")
-    Double readings;
+    double readings;
 
     @NonNull
     @JsonProperty("creation_date")

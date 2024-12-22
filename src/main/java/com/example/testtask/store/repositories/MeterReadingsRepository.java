@@ -8,7 +8,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.Month;
-import java.util.List;
 import java.util.Optional;
 
 public interface MeterReadingsRepository extends JpaRepository<MeterReadingsEntity, Long> {
@@ -22,5 +21,4 @@ public interface MeterReadingsRepository extends JpaRepository<MeterReadingsEnti
 
     Optional<MeterReadingsEntity> findByMeterAndReadingsDate(MetersEntity meter, Month readingsDate);
 
-    List<MeterReadingsEntity> meter(MetersEntity meter);
 }

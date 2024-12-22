@@ -1,6 +1,5 @@
 package com.example.testtask.api.controllers;
 
-import com.example.testtask.api.dto.HandbookAddressesDTO;
 import com.example.testtask.api.dto.MetersDTO;
 import com.example.testtask.api.exceptions.BadRequestException2;
 import com.example.testtask.api.exceptions.NotFoundException2;
@@ -33,8 +32,6 @@ import java.util.stream.Collectors;
 @Transactional
 @RestController
 
-//TO DO: Сделать валидацию для обработки ожидаемых форматов данных с помощью библиотеки javax.validation
-
 public class MetersController {
 
     MetersRepository metersRepository;
@@ -54,9 +51,9 @@ public class MetersController {
             @Valid
             @RequestParam String metersSerialNumber,
             @RequestParam String street,
-            @RequestParam Integer number,
+            @RequestParam int number,
             @RequestParam(required=false) String literal,
-            @RequestParam(required=false) Integer flat,
+            @RequestParam(required=false) int flat,
             @RequestParam LocalDate installationDate) {
 
         metersRepository
@@ -64,14 +61,14 @@ public class MetersController {
                 .ifPresent(meters -> {
                     throw new BadRequestException2(
                             String.format(
-                                    "Meter: \"%s\" already exists.",
+                                    "Прибор учета с серийным номером \"%s\" уже существует.",
                                     metersSerialNumber
                             )
                     );
                 });
 
         literal = (literal == null) ? "" : literal;
-        flat = (flat == null) ? 0 : flat;
+        flat = (flat == 0) ? 0 : flat;
 
         String finalLiteral = literal;
         Integer finalFlat = flat;
@@ -80,7 +77,7 @@ public class MetersController {
                 .findByStreetAndNumberAndLiteralAndFlat(street, number, finalLiteral, finalFlat)
                 .orElseThrow(() -> new NotFoundException2(
                         String.format(
-                                "Address \"%s\" \"%s\"%s%s  does not exist.",
+                                "Адрес \"%s\" \"%s\"%s%s не существует.",
                                 street, number,
                                 (!finalLiteral.isEmpty() ? String.format(" \"%s\"", finalLiteral) : ""),
                                 (finalFlat != 0 ? String.format(" \"%s\"", finalFlat) : "")
@@ -112,7 +109,7 @@ public class MetersController {
                 .orElseThrow(() ->
                         new NotFoundException2(
                                 String.format(
-                                        "Meter: \"%s\" does not exist.",
+                                        "Прибор учета с серийным номером \"%s\" не существует.",
                                         metersSerialNumber
                                 )
                         )
@@ -123,7 +120,7 @@ public class MetersController {
                 .ifPresent(existingMeters -> {
                     throw new BadRequestException2(
                             String.format(
-                                    "Meter: \"%s\" already exists.",
+                                    "Прибор учета с серийным номером \"%s\" уже существует.",
                                     newMetersSerialNumber
                             )
                     );
@@ -149,7 +146,7 @@ public class MetersController {
                 .orElseThrow(() ->
                         new NotFoundException2(
                                 String.format(
-                                        "Meter: \"%s\" does not exist.",
+                                        "Прибор учета с серийным номером \"%s\" не существует.",
                                         metersSerialNumber
                                 )
                         )
@@ -160,7 +157,7 @@ public class MetersController {
                 .orElseThrow(() ->
                         new NotFoundException2(
                                 String.format(
-                                        "Meter: \"%s\" \"%s\" does not exist.",
+                                        "Прибор учета с серийным номером \"%s\" и датой установки \"%s\" не существует.",
                                         metersSerialNumber, installationDate
                                 )
                         )
@@ -171,7 +168,7 @@ public class MetersController {
                 .ifPresent(existingMeters -> {
                     throw new BadRequestException2(
                             String.format(
-                                    "Meter: \"%s\" \"%s\" already exists.",
+                                    "Прибор учета с серийным номером \"%s\" и датой установки \"%s\" уже существует.",
                                     metersSerialNumber, newInstallationDate
                             )
                     );
@@ -218,7 +215,7 @@ public class MetersController {
                 .orElseThrow(() ->
                         new NotFoundException2(
                                 String.format(
-                                        "Meter: \"%s\" does not exist.",
+                                        "Прибор учета с серийным номером \"%s\" не существует.",
                                         metersSerialNumber
                                 )
                         )
@@ -238,7 +235,7 @@ public class MetersController {
                 .orElseThrow(() ->
                         new NotFoundException2(
                                 String.format(
-                                        "Meter: \"%s\" does not exist.",
+                                        "Прибор учета с серийным номером \"%s\" не существует.",
                                         metersSerialNumber
                                 )
                         )
@@ -246,7 +243,7 @@ public class MetersController {
 
         metersRepository.delete(meters);
 
-        System.out.println("Deleted Meter: " + meters.getMetersSerialNumber());
+        System.out.println("Удален прибор учета с серийным номером: " + meters.getMetersSerialNumber());
 
         return ResponseEntity.noContent().build();
     }
@@ -256,7 +253,7 @@ public class MetersController {
 
         metersRepository.deleteAll();
 
-        System.out.println("Deleted All Meters");
+        System.out.println("Удалены все приборы учета!");
 
         return ResponseEntity.noContent().build();
     }

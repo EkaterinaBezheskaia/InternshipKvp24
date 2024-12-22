@@ -1,11 +1,9 @@
 package com.example.testtask.api.controllers;
 
-import com.example.testtask.api.dto.HandbookAddressesDTO;
 import com.example.testtask.api.dto.MeterReadingsDTO;
 import com.example.testtask.api.exceptions.BadRequestException2;
 import com.example.testtask.api.exceptions.NotFoundException2;
 import com.example.testtask.api.factories.MeterReadingsDTOFactory;
-import com.example.testtask.store.entities.HandbookTypeMetersEntity;
 import com.example.testtask.store.entities.MeterReadingsEntity;
 import com.example.testtask.store.entities.MetersEntity;
 import com.example.testtask.store.repositories.MeterReadingsRepository;
@@ -50,14 +48,14 @@ public class MeterReadingsController {
     public MeterReadingsDTO createMeterReadingsNumber(
             @PathVariable("meter") MetersEntity meter,
             @PathVariable("readingsDate") Month readingsDate,
-            @RequestParam Double readings) {
+            @RequestParam double readings) {
 
         meterReadingsRepository
                 .findByMeterAndReadingsDate(meter, readingsDate)
                 .ifPresent(meterReadings -> {
                     throw new BadRequestException2(
                             String.format(
-                                    "Meter: \"%s\" \"%s\" already exists.",
+                                    "Показания прибора \"%s\" за период \"%s\" уже существуют.",
                                     meter, readingsDate
                             )
                     );
@@ -79,14 +77,14 @@ public class MeterReadingsController {
     public MeterReadingsDTO editMeterReadings(
             @PathVariable("meter") MetersEntity meter,
             @PathVariable("readingsDate") Month readingsDate,
-            @RequestParam Double readings) {
+            @RequestParam double readings) {
 
         MeterReadingsEntity meterReadings = meterReadingsRepository
                 .findByMeterAndReadingsDate(meter, readingsDate)
                 .orElseThrow(() ->
                         new NotFoundException2(
                                 String.format(
-                                        "Meter: \"%s\" \"%s\" does not exist.",
+                                        "Показания прибора \"%s\" за период \"%s\" не существуют.",
                                         meter, readingsDate
                                 )
                         )
@@ -134,8 +132,8 @@ public class MeterReadingsController {
                 .orElseThrow(() ->
                         new NotFoundException2(
                                 String.format(
-                                        "Readings from \"%s\" from Meter: \"%s\" does not exist.",
-                                        readingsDate, meter
+                                        "Показания прибора \"%s\" за период \"%s\" не существуют",
+                                        meter, readingsDate
                                 )
                         )
                 );
@@ -154,15 +152,15 @@ public class MeterReadingsController {
                 .orElseThrow(() ->
                         new NotFoundException2(
                                 String.format(
-                                        "Readings from \"%s\" from Meter: \"%s\" does not exist.",
-                                        readingsDate, meter
+                                        "Показания прибора \"%s\" за период \"%s\" не существуют.",
+                                        meter, readingsDate
                                 )
                         )
                 );
 
         meterReadingsRepository.delete(meterReadings);
 
-        System.out.println("Deleted readings data: " + readingsDate + " " + meterReadings.getReadings() + "!");
+        System.out.println("Удалены показания за: " + readingsDate + " с значением: " + meterReadings.getReadings() + "!");
 
         return ResponseEntity.noContent().build();
     }
@@ -172,7 +170,7 @@ public class MeterReadingsController {
 
         meterReadingsRepository.deleteAll();
 
-        System.out.println("Deleted All meter's readings.");
+        System.out.println("Удалены все показания!");
 
         return ResponseEntity.noContent().build();
     }

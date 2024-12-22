@@ -16,14 +16,14 @@ import java.time.ZoneId;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 
-public class HandbookTypeMetersDTO {
+public class HandbookMeterTypesDTO {
 
     @NotNull(message = "ID не должен быть пустым")
-    Long id;
+    long id;
 
     @NotNull(message = "Название типа прибора не должно быть пустым")
     @Size(max = 100, message = "Название типа прибора не должно превышать 100 символов")
-    String titleTypeMeters;
+    String meterTypeTitle;
 
     @NonNull
     @JsonProperty("creation_date")

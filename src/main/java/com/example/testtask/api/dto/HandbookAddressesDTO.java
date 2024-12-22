@@ -21,7 +21,7 @@ import java.time.ZoneId;
 public class HandbookAddressesDTO {
 
     @NotNull(message = "ID не должен быть пустым")
-    Long id;
+    long id;
 
     @NotNull(message = "Улица не должна быть пустой")
     @Size(max = 100, message = "Название улицы не должно превышать 100 символов")
@@ -29,13 +29,13 @@ public class HandbookAddressesDTO {
 
     @NotNull(message = "Номер не должен быть пустым")
     @Min(value = 0, message = "Номер дома должен быть положительным")
-    Integer number;
+    int number;
 
     @Size(max = 1, message = "Литерал не должен превышать 1 символа")
     String literal;
 
     @Min(value = 0, message = "Номер квартиры должен быть положительным")
-    Integer flat;
+    int flat;
 
     @NonNull
     @JsonProperty("creation_date")

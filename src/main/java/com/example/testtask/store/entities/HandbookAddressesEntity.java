@@ -22,19 +22,19 @@ public class HandbookAddressesEntity extends HandbookAddressesDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column (name = "column_0_id")
-    private Long id;
+    private long id;
 
     @Column (name = "column_1_street", nullable = false)
     private String street;
 
     @Column (name = "column_2_number", nullable = false)
-    private Integer number;
+    private int number;
 
     @Column (name = "column_3_literal")
     private String literal;
 
     @Column (name = "column_4_flat")
-    private Integer flat;
+    private int flat;
 
     @Column (name = "column_5_utc_date", nullable = false)
     private Instant createdAt = Instant.now();

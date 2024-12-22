@@ -20,7 +20,7 @@ import java.time.ZoneId;
 public class MetersDTO {
 
     @NotNull(message = "ID не должен быть пустым")
-    Long id;
+    long id;
 
     @NotNull(message = "Серийный номер прибора не должен быть пустым")
     @Size(max = 100, message = "Серийный номер прибора не должен превышать 100 символов")

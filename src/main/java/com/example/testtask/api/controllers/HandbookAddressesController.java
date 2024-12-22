@@ -49,20 +49,20 @@ public class HandbookAddressesController {
     public HandbookAddressesDTO createAddress(
             @Valid
             @RequestParam String street,
-            @RequestParam Integer number,
+            @RequestParam int number,
             @RequestParam(required=false) String literal,
-            @RequestParam(required=false) Integer flat) {
+            @RequestParam(required=false) int flat) {
 
         literal = (literal == null) ? "" : literal;
-        flat = (flat == null) ? 0 : flat;
+        flat = (flat == 0) ? 0 : flat;
 
         String finalLiteral = literal;
-        Integer finalFlat = flat;
+        int finalFlat = flat;
 
         if (handbookAddressesRepository.existsByStreetAndNumberAndLiteralAndFlat(street, number, literal, flat)) {
             throw new BadRequestException2(
                     String.format(
-                            "Address \"%s\" \"%s\"%s%s already exists.",
+                            "Адрес \"%s\" \"%s\"%s%s уже существует.",
                             street, number,
                             (!finalLiteral.isEmpty() ? String.format(" \"%s\"", finalLiteral) : ""),
                             (finalFlat != 0 ? String.format(" \"%s\"", finalFlat) : "")
@@ -91,9 +91,9 @@ public class HandbookAddressesController {
             @RequestParam(required=false) String literal,
             @RequestParam(required=false) int flat,
             @RequestParam(required=false) @Size(max = 100, message = "Название новой улицы не должно превышать 100 символов") String newStreet,
-            @RequestParam(required=false) @Min(value = 0, message = "Новый номер дома должен быть положительным") Integer newNumber,
+            @RequestParam(required=false) @Min(value = 0, message = "Новый номер дома должен быть положительным") int newNumber,
             @RequestParam(required=false) @Size(max = 1, message = "Новый литерал не должен превышать 1 символа") String newLiteral,
-            @RequestParam(required=false) @Min(value = 0, message = "Новый номер квартиры должен быть положительным") Integer newFlat) {
+            @RequestParam(required=false) @Min(value = 0, message = "Новый номер квартиры должен быть положительным") int newFlat) {
 
         String finalStreet = street != null ? street : "";
         int finalNumber = number != 0 ? number : 0;
@@ -105,7 +105,7 @@ public class HandbookAddressesController {
                 .orElseThrow(() ->
                         new NotFoundException2(
                                 String.format(
-                                        "Address with \"%s\" \"%s\" \"%s\" \"%s\" does not exist.",
+                                        "Адрес \"%s\" \"%s\" \"%s\" \"%s\" не существует.",
                                         (!finalStreet.isEmpty() ? String.format(" \"%s\"", finalStreet) : ""),
                                         (finalNumber != 0 ? String.format(" \"%s\"", finalNumber) : ""),
                                         (!finalLiteral.isEmpty() ? String.format(" \"%s\"", finalLiteral) : ""),
@@ -121,7 +121,7 @@ public class HandbookAddressesController {
         if (handbookAddressesRepository.existsByStreetAndNumberAndLiteralAndFlat(newStreet, newNumber, newLiteral, newFlat)) {
             throw new BadRequestException2(
                             String.format(
-                                    "Address \"%s\" \"%s\" \"%s\" \"%s\" already exists.",
+                                    "Адрес \"%s\" \"%s\" \"%s\" \"%s\" уже существует.",
                                     (finalNewStreet.isEmpty() ? String.format(" \"%s\"", finalNewStreet) : ""),
                                     (finalNewNumber != 0 ? String.format(" \"%s\"", finalNewNumber) : ""),
                                     (!finalNewLiteral.isEmpty() ? String.format(" \"%s\"", finalNewLiteral) : ""),
@@ -179,7 +179,10 @@ public class HandbookAddressesController {
 
         if (addresses.isEmpty()) {
             throw new NotFoundException2(
-                    String.format("Не найдено адресов для улицы \"%s\".", street)
+                    String.format(
+                            "Не найдено адресов для улицы \"%s\".",
+                            street
+                    )
             );
         }
 
@@ -192,7 +195,7 @@ public class HandbookAddressesController {
     @GetMapping(HandbookAddressesController.GET_ADDRESS)
     public List<HandbookAddressesDTO> getStreet(
             @PathVariable("street") String street,
-            @PathVariable("number") Integer number,
+            @PathVariable("number") int number,
             @RequestParam(required = false) String literal,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -202,11 +205,14 @@ public class HandbookAddressesController {
         Pageable pageable = PageRequest.of(page, size);
 
         List<HandbookAddressesEntity> addresses = handbookAddressesRepository
-                .findByStreetAndNumberOrderByLiteralAscFlatAsc(street, number, pageable); //Поиск по улице И по номеру
+                .findByStreetAndNumberOrderByLiteralAscFlatAsc(street, number, pageable);
 
         if (addresses.isEmpty()) {
             throw new NotFoundException2(
-                    String.format("Не найдено адресов для улицы \"%s\".", street)
+                    String.format(
+                            "Не найдено адресов для улицы \"%s\".",
+                            street
+                    )
             );
         }
 
@@ -218,22 +224,22 @@ public class HandbookAddressesController {
     @DeleteMapping(DELETE_ADDRESS)
     public ResponseEntity<HandbookAddressesDTO> deleteAddress(
             @PathVariable("street") String street,
-            @PathVariable("number") Integer number,
+            @PathVariable("number") int number,
             @RequestParam(required = false) String literal,
             @RequestParam(required = false) Integer flat) {
 
         literal = (literal == null) ? "" : literal;
-        flat = (flat == null) ? 0 : flat;
+        flat = (flat == 0) ? 0 : flat;
 
         String finalLiteral = literal;
-        Integer finalFlat = flat;
+        int finalFlat = flat;
 
         HandbookAddressesEntity handbookAddresses = handbookAddressesRepository
                 .findByStreetAndNumberAndLiteralAndFlat(street, number, literal, flat)
                 .orElseThrow(() ->
                         new NotFoundException2(
                                 String.format(
-                                        "Address with \"%s\" \"%s\" \"%s\" \"%s\" does not exist.",
+                                        "Адрес \"%s\" \"%s\" \"%s\" \"%s\" не существует.",
                                         street, number,
                                         (!finalLiteral.isEmpty() ? String.format(" \"%s\"", finalLiteral) : ""),
                                         (finalFlat != 0 ? String.format(" \"%s\"", finalFlat) : "")
@@ -243,7 +249,7 @@ public class HandbookAddressesController {
 
 
         handbookAddressesRepository.delete(handbookAddresses);
-        System.out.println("Deleted Address: " + handbookAddresses.getStreet() + " " + handbookAddresses.getNumber() +
+        System.out.println("Удален адрес: " + handbookAddresses.getStreet() + " " + handbookAddresses.getNumber() +
                 " " + handbookAddresses.getLiteral() + " " + handbookAddresses.getFlat());
 
         return ResponseEntity.noContent().build();
@@ -254,7 +260,7 @@ public class HandbookAddressesController {
 
         handbookAddressesRepository.deleteAll();
 
-        System.out.println("Deleted All Addresses");
+        System.out.println("Удалены все адреса!");
 
         return ResponseEntity.noContent().build();
     }

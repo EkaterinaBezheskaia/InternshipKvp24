@@ -9,7 +9,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.time.ZoneId;
-import java.util.List;
 
 @Getter
 @Setter
@@ -48,7 +47,7 @@ public class MetersEntity extends MetersDTO {
 
     @ManyToOne
     @JoinColumn (name = "column_8_type_id")
-    private HandbookTypeMetersEntity type;
+    private HandbookMeterTypesEntity type;
 
     @OneToMany(mappedBy = "meter")
     private List<MeterReadingsEntity> readings;
