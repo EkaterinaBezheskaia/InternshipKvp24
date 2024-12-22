@@ -11,6 +11,10 @@ import java.time.Month;
 import java.time.ZoneId;
 import java.util.List;
 
+/**
+ * Сущность для представления показаний приборов учета.
+ * Наследует от DTO для передачи данных.
+ */
 @Getter
 @Setter
 @Builder
@@ -18,33 +22,56 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "meter_readings")
-
 public class MeterReadingsEntity extends MeterReadingsDTO {
 
+    /**
+     * Уникальный идентификатор показаний.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column (name = "column_0_id")
+    @Column(name = "column_0_id")
     private Long id;
 
+    /**
+     * Дата показаний, представлена в виде месяца.
+     * Не может быть пустым.
+     */
     @Enumerated(EnumType.STRING)
     @Column(name = "column_1_readings_date", nullable = false)
     private Month readingsDate;
 
-    @Column (name = "column_2_readins", nullable = false)
+    /**
+     * Значение показаний прибора.
+     * Не может быть пустым.
+     */
+    @Column(name = "column_2_readins", nullable = false)
     private BigDecimal readings;
 
+    /**
+     * Дата и время создания записи о показаниях.
+     * Устанавливается по умолчанию на текущее время.
+     */
     @Builder.Default
-    @Column (name = "column_3_utc_date")
+    @Column(name = "column_3_utc_date")
     Instant creationDate = Instant.now();
 
-    @Column (name = "column_4_located_date", nullable = false)
+    /**
+     * Локальное время создания записи о показаниях.
+     * Не может быть пустым.
+     */
+    @Column(name = "column_4_located_date", nullable = false)
     private LocalDateTime createdAtLocal = LocalDateTime.now(ZoneId.systemDefault());
 
-    @Column (name = "column_5_updated_date")
+    /**
+     * Дата и время последнего обновления записи о показаниях.
+     */
+    @Column(name = "column_5_updated_date")
     Instant updatedAt = Instant.now();
 
+    /**
+     * Прибор учета, к которому относятся показания.
+     */
     @ManyToOne
-    @JoinColumn (name = "column_6_meter_id")
+    @JoinColumn(name = "column_6_meter_id")
     private MetersEntity meter;
-
 }

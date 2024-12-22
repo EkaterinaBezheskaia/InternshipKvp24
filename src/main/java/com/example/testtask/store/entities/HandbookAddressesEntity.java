@@ -9,6 +9,10 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 
+/**
+ * Сущность для представления адресов в справочнике.
+ * Наследует от DTO для передачи данных.
+ */
 @Getter
 @Setter
 @Builder
@@ -16,36 +20,61 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "handbook_adresses")
-
 public class HandbookAddressesEntity extends HandbookAddressesDTO {
 
+    /**
+     * Уникальный идентификатор адреса.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @Column (name = "column_0_id")
+    @Column(name = "column_0_id")
     private Long id;
 
-    @Column (name = "column_1_street", nullable = false)
+    /**
+     * Название улицы.
+     */
+    @Column(name = "column_1_street", nullable = false)
     private String street;
 
-    @Column (name = "column_2_number", nullable = false)
+    /**
+     * Номер дома.
+     */
+    @Column(name = "column_2_number", nullable = false)
     private int number;
 
-    @Column (name = "column_3_literal")
+    /**
+     * Литерал адреса (необязательный).
+     */
+    @Column(name = "column_3_literal")
     private String literal;
 
-    @Column (name = "column_4_flat")
+    /**
+     * Номер квартиры (необязательный).
+     */
+    @Column(name = "column_4_flat")
     private int flat;
 
-    @Column (name = "column_5_utc_date", nullable = false)
+    /**
+     * Дата и время создания адреса.
+     */
+    @Column(name = "column_5_utc_date", nullable = false)
     private Instant createdAt = Instant.now();
 
-    @Column (name = "column_6_located_date", nullable = false)
+    /**
+     * Локальное время создания адреса.
+     */
+    @Column(name = "column_6_located_date", nullable = false)
     private LocalDateTime createdAtLocal = LocalDateTime.now(ZoneId.systemDefault());
 
-    @Column (name = "column_7_updated_date")
+    /**
+     * Дата и время последнего обновления адреса.
+     */
+    @Column(name = "column_7_updated_date")
     Instant updatedAt = Instant.now();
 
+    /**
+     * Список приборов учета, связанных с данным адресом.
+     */
     @OneToMany(mappedBy = "address")
     private List<MetersEntity> meters;
-
 }

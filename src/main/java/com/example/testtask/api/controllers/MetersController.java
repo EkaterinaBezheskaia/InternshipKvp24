@@ -28,11 +28,13 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Контроллер для работы с приборами учета.
+ */
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Transactional
 @RestController
-
 public class MetersController {
 
     MetersRepository metersRepository;
@@ -47,6 +49,19 @@ public class MetersController {
     public static final String DELETE_METER = "/api/meters/{metersSerialNumber}";
     public static final String DELETE_ALL_METERS = "/api/meters";
 
+    /**
+     * Создает новый прибор учета.
+     *
+     * @param metersSerialNumber серийный номер прибора учета
+     * @param street название улицы
+     * @param number номер дома
+     * @param literal литерал (необязательный)
+     * @param flat номер квартиры (необязательный)
+     * @param installationDate дата установки
+     * @return созданный прибор учета в виде DTO
+     * @throws BadRequestException2 если прибор учета уже существует
+     * @throws NotFoundException2 если адрес не найден
+     */
     @PostMapping(CREATE_METERS)
     public MetersDTO createMetersSerialNumber(
             @Valid
@@ -98,6 +113,15 @@ public class MetersController {
         return metersDTOFactory.makeMetersDTO(meters);
     }
 
+    /**
+     * Обновляет существующий прибор учета.
+     *
+     * @param metersSerialNumber старый серийный номер
+     * @param newMetersSerialNumber новый серийный номер
+     * @return обновленный прибор учета в виде DTO
+     * @throws NotFoundException2 если прибор учета не найден
+     * @throws BadRequestException2 если новый прибор учета уже существует
+     */
     @PatchMapping(EDIT_METERS)
     public MetersDTO editMeter(
             @Valid
@@ -116,7 +140,7 @@ public class MetersController {
                 );
 
         metersRepository
-                .findByMetersSerialNumber(metersSerialNumber)
+                .findByMetersSerialNumber(newMetersSerialNumber)
                 .ifPresent(existingMeters -> {
                     throw new BadRequestException2(
                             String.format(
@@ -127,7 +151,6 @@ public class MetersController {
                 });
 
         meters.setUpdatedAt(Instant.now());
-
         meters.setMetersSerialNumber(newMetersSerialNumber);
 
         meters = metersRepository.saveAndFlush(meters);
@@ -135,6 +158,16 @@ public class MetersController {
         return metersDTOFactory.makeMetersDTO(meters);
     }
 
+    /**
+     * Обновляет дату установки прибора учета.
+     *
+     * @param metersSerialNumber серийный номер прибора учета
+     * @param installationDate старая дата установки
+     * @param newInstallationDate новая дата установки
+     * @return обновленный прибор учета в виде DTO
+     * @throws NotFoundException2 если прибор учета не найден
+     * @throws BadRequestException2 если новый прибор учета с данной датой уже существует
+     */
     @PatchMapping(EDIT_DATE)
     public MetersDTO editDate(
             @Valid
@@ -153,7 +186,7 @@ public class MetersController {
                         )
                 );
 
-        MetersEntity meters_installation_date = metersRepository
+        metersRepository
                 .findByMetersSerialNumberAndInstallationDate(metersSerialNumber, installationDate)
                 .orElseThrow(() ->
                         new NotFoundException2(
@@ -176,7 +209,6 @@ public class MetersController {
                 });
 
         meters.setUpdatedAt(Instant.now());
-
         meters.setInstallationDate(newInstallationDate);
 
         meters = metersRepository.saveAndFlush(meters);
@@ -184,6 +216,15 @@ public class MetersController {
         return metersDTOFactory.makeMetersDTO(meters);
     }
 
+    /**
+     * Получает все приборы учета с пагинацией и сортировкой.
+
+     * @param page номер страницы
+     * @param size размер страницы
+     * @param sortBy поля для сортировки
+     * @return список приборов учета в виде DTO
+     * @throws NotFoundException2 если приборы учета не найдены
+     */
     @GetMapping(GET_ALL_METERS)
     public List<MetersDTO> getAllMeters(
             @Valid
@@ -191,23 +232,29 @@ public class MetersController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "metersSerialNumber") String[] sortBy) {
 
-            Sort sort = Sort.by(sortBy).ascending();
+        Sort sort = Sort.by(sortBy).ascending();
 
-            Page<MetersEntity> allMeters = metersRepository
-            .findAll(PageRequest.of(page, size, sort));
+        Page<MetersEntity> allMeters = metersRepository
+                .findAll(PageRequest.of(page, size, sort));
 
-            if (allMeters.isEmpty()) {
-                throw new NotFoundException2(
-                        "Не найдено приборов учета"
-                );
-            }
+        if (allMeters.isEmpty()) {
+            throw new NotFoundException2(
+                    "Не найдено приборов учета"
+            );
+        }
 
         return allMeters.stream()
                 .map(metersDTOFactory::makeMetersDTO)
                 .collect(Collectors.toList());
-
     }
 
+    /**
+     * Получает прибор учета по серийному номеру.
+     *
+     * @param metersSerialNumber серийный номер прибора учета
+     * @return прибор учета в виде DTO
+     * @throws NotFoundException2 если прибор учета не найден
+     */
     @GetMapping(GET_METER)
     public MetersDTO getTitleMeters(
             @Valid
@@ -229,6 +276,13 @@ public class MetersController {
         return metersDTOFactory.makeMetersDTO(meters);
     }
 
+    /**
+     * Удаляет прибор учета по серийному номеру.
+     *
+     * @param metersSerialNumber серийный номер прибора учета
+     * @return ответ без содержимого
+     * @throws NotFoundException2 если прибор учета не найден
+     */
     @DeleteMapping(DELETE_METER)
     public ResponseEntity<MetersDTO> deleteMeters(
             @Valid
@@ -252,6 +306,11 @@ public class MetersController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Удаляет все приборы учета.
+     *
+     * @return ответ без содержимого
+     */
     @DeleteMapping(DELETE_ALL_METERS)
     public ResponseEntity<MetersDTO> deleteAllMeters() {
 
@@ -261,5 +320,4 @@ public class MetersController {
 
         return ResponseEntity.noContent().build();
     }
-
 }

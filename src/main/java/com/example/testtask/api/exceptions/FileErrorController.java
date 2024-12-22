@@ -15,6 +15,10 @@ import org.springframework.web.context.request.WebRequest;
 
 import java.util.Map;
 
+/**
+ * Контроллер для обработки ошибок в приложении.
+ * Реализует интерфейс ErrorController для предоставления пользовательских сообщений об ошибках.
+ */
 @RequiredArgsConstructor
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @Controller
@@ -24,6 +28,12 @@ public class FileErrorController implements ErrorController {
 
     DefaultErrorAttributes errorAttributes;
 
+    /**
+     * Обрабатывает ошибки и возвращает ответ с информацией об ошибке.
+     *
+     * @param webRequest объект запроса, содержащий информацию о запросе, вызвавшем ошибку
+     * @return ResponseEntity с информацией об ошибке в формате ErrorDTO
+     */
     @RequestMapping(FileErrorController.PATH)
     public ResponseEntity<ErrorDTO> error(WebRequest webRequest) {
 
@@ -41,5 +51,4 @@ public class FileErrorController implements ErrorController {
                         .build()
                 );
     }
-
 }

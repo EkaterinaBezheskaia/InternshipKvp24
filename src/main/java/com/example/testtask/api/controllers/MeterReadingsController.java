@@ -29,11 +29,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Контроллер для работы с показаниями приборов учета.
+ */
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Transactional
 @RestController
-
 public class MeterReadingsController {
 
     MeterReadingsRepository meterReadingsRepository;
@@ -46,6 +48,15 @@ public class MeterReadingsController {
     public static final String DELETE_METER_READINGS = "/api/meterReadings/{meter}/{readingsDate}";
     public static final String DELETE_ALL_METER_READINGS = "/api/meterReadings/reset";
 
+    /**
+     * Создает новые показания для прибора учета.
+     *
+     * @param meter прибор учета
+     * @param readingsDate дата показаний
+     * @param readings показания
+     * @return созданные показания в виде DTO
+     * @throws BadRequestException2 если показания уже существуют
+     */
     @PostMapping(CREATE_METER_READINGS)
     public MeterReadingsDTO createMeterReadingsNumber(
             @Valid
@@ -78,6 +89,15 @@ public class MeterReadingsController {
         return meterReadingsDTOFactory.makeMeterReadingsDTO(meterReadings);
     }
 
+    /**
+     * Обновляет существующие показания прибора учета.
+     *
+     * @param meter прибор учета
+     * @param readingsDate дата показаний
+     * @param readings новые показания
+     * @return обновленные показания в виде DTO
+     * @throws NotFoundException2 если показания не найдены
+     */
     @PatchMapping(EDIT_METER_READINGS)
     public MeterReadingsDTO editMeterReadings(
             @Valid
@@ -97,7 +117,6 @@ public class MeterReadingsController {
                 );
 
         meterReadings.setUpdatedAt(Instant.now());
-
         meterReadings.setReadings(readings);
 
         meterReadings = meterReadingsRepository.saveAndFlush(meterReadings);
@@ -105,6 +124,16 @@ public class MeterReadingsController {
         return meterReadingsDTOFactory.makeMeterReadingsDTO(meterReadings);
     }
 
+    /**
+     * Получает все показания для прибора учета с пагинацией.
+     *
+     * @param meter прибор учета
+     * @param sortBy поля для сортировки
+     * @param page номер страницы
+     * @param size размер страницы
+     * @return список показаний в виде DTO
+     * @throws NotFoundException2 если показания не найдены
+     */
     @GetMapping(GET_ALL_METER_READINGS)
     public List<MeterReadingsDTO> getMeterReadings(
             @Valid
@@ -129,6 +158,14 @@ public class MeterReadingsController {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Получает показания прибора учета по дате.
+     *
+     * @param meter прибор учета
+     * @param readingsDate дата показаний
+     * @return показания в виде DTO
+     * @throws NotFoundException2 если показания не найдены
+     */
     @GetMapping(GET_METER_READINGS)
     public MeterReadingsDTO getMeterReadings(
             @Valid
@@ -149,6 +186,15 @@ public class MeterReadingsController {
         return meterReadingsDTOFactory.makeMeterReadingsDTO(meterReadings);
     }
 
+    /**
+     * Удаляет показания прибора учета по дате.
+     *
+     * @param meter прибор учета
+     * @param readingsDate дата показаний
+     * @param readings показания
+     * @return ответ без содержимого
+     * @throws NotFoundException2 если показания не найдены
+     */
     @DeleteMapping(DELETE_METER_READINGS)
     public ResponseEntity<MeterReadingsDTO> deleteMeterReadings(
             @Valid
@@ -174,6 +220,11 @@ public class MeterReadingsController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Удаляет все показания приборов учета.
+     *
+     * @return ответ без содержимого
+     */
     @DeleteMapping(DELETE_ALL_METER_READINGS)
     public ResponseEntity<MeterReadingsDTO> deleteAllReadings() {
 

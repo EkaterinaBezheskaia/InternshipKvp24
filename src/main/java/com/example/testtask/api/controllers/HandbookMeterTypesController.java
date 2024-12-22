@@ -24,6 +24,9 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Контроллер для работы с типами приборов учета.
+ */
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Transactional
@@ -40,6 +43,13 @@ public class HandbookMeterTypesController {
     public static final String DELETE_METER_TYPE = "/api/meterTypes/{meterTypeTitle}";
     public static final String DELETE_ALL_METER_TYPES = "/api/meterTypes/reset";
 
+    /**
+     * Создает новый тип прибора учета.
+     *
+     * @param meterTypeTitle название типа прибора учета
+     * @return созданный тип прибора учета в виде DTO
+     * @throws BadRequestException2 если тип уже существует
+     */
     @PostMapping(CREATE_METER_TYPE)
     public HandbookMeterTypesDTO createMeterType(
             @Valid
@@ -67,6 +77,15 @@ public class HandbookMeterTypesController {
         return handbookMeterTypesDTOFactory.makeHandbookMeterTypesDTO(meterType);
     }
 
+    /**
+     * Обновляет существующий тип прибора учета.
+     *
+     * @param meterTypeTitle старое название типа
+     * @param newMeterTypeTitle новое название типа
+     * @return обновленный тип прибора учета в виде DTO
+     * @throws NotFoundException2 если тип не найден
+     * @throws BadRequestException2 если новый тип уже существует
+     */
     @PatchMapping(EDIT_METER_TYPE)
     public HandbookMeterTypesDTO editMeterType(
             @Valid
@@ -103,6 +122,15 @@ public class HandbookMeterTypesController {
         return handbookMeterTypesDTOFactory.makeHandbookMeterTypesDTO(meterType);
     }
 
+    /**
+     * Получает все типы приборов учета с пагинацией и сортировкой.
+     *
+     * @param page номер страницы
+     * @param size размер страницы
+     * @param sortBy поле для сортировки
+     * @return список типов приборов учета в виде DTO
+     * @throws NotFoundException2 если типы не найдены
+     */
     @GetMapping(GET_ALL_METER_TYPES)
     public List<HandbookMeterTypesDTO> getAllMeterTypes(
             @Valid
@@ -126,6 +154,14 @@ public class HandbookMeterTypesController {
                 .collect(Collectors.toList());
     }
 
+    /**
+     ```java
+     * Получает тип прибора учета по названию.
+     *
+     * @param meterTypeTitle название типа прибора учета
+     * @return тип прибора учета в виде DTO
+     * @throws NotFoundException2 если тип не найден
+     */
     @GetMapping(GET_METER_TYPE)
     public HandbookMeterTypesDTO getMeterType(
             @Valid
@@ -147,6 +183,13 @@ public class HandbookMeterTypesController {
         return handbookMeterTypesDTOFactory.makeHandbookMeterTypesDTO(meterType);
     }
 
+    /**
+     * Удаляет тип прибора учета по названию.
+     *
+     * @param meterTypeTitle название типа прибора учета
+     * @return ответ без содержимого
+     * @throws NotFoundException2 если тип не найден
+     */
     @DeleteMapping(DELETE_METER_TYPE)
     public ResponseEntity<HandbookMeterTypesDTO> deleteMeterType(
             @Valid
@@ -170,6 +213,11 @@ public class HandbookMeterTypesController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Удаляет все типы приборов учета.
+     *
+     * @return ответ без содержимого
+     */
     @DeleteMapping(DELETE_ALL_METER_TYPES)
     public ResponseEntity<HandbookMeterTypesDTO> deleteAllMeterTypes() {
 

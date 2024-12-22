@@ -8,8 +8,6 @@ import com.example.testtask.store.entities.HandbookAddressesEntity;
 import com.example.testtask.store.repositories.HandbookAddressesRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -26,12 +24,13 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
+/**
+ * Контроллер для работы с адресами.
+ */
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Transactional
 @RestController
-
 public class HandbookAddressesController {
 
     HandbookAddressesRepository handbookAddressesRepository;
@@ -45,6 +44,16 @@ public class HandbookAddressesController {
     public static final String DELETE_ADDRESS = "/api/addresses/{street}/{number}";
     public static final String DELETE_ALL_ADDRESS = "/api/reset";
 
+    /**
+     * Создает новый адрес.
+     *
+     * @param street название улицы
+     * @param number номер дома
+     * @param literal литерал (необязательный)
+     * @param flat номер квартиры (необязательный)
+     * @return созданный адрес в виде DTO
+     * @throws BadRequestException2 если адрес уже существует
+     */
     @PostMapping(CREATE_ADDRESS)
     public HandbookAddressesDTO createAddress(
             @Valid
@@ -84,6 +93,21 @@ public class HandbookAddressesController {
         return handbookAddressesDTOFactory.makeHandbookAddressesDTO(handbookAddresses);
     }
 
+    /**
+     * Обновляет существующий адрес.
+     *
+     * @param street старая улица
+     * @param number старый номер дома
+     * @param literal старая литерал (необязательный)
+     * @param flat старый номер квартиры (необязательный)
+     * @param newStreet новая улица (необязательный)
+     * @param newNumber новый номер дома (необязательный)
+     * @param newLiteral новый литерал (необязательный)
+     * @param newFlat новый номер квартиры (необязательный)
+     * @return обновленный адрес в виде DTO
+     * @throws NotFoundException2 если адрес не найден
+     * @throws BadRequestException2 если новый адрес уже существует
+     */
     @PatchMapping(EDIT_ADDRESS)
     public HandbookAddressesDTO editAddress(
             @Valid
@@ -121,14 +145,14 @@ public class HandbookAddressesController {
         int finalNewFlat = newFlat != 0 ? newFlat : 0;
         if (handbookAddressesRepository.existsByStreetAndNumberAndLiteralAndFlat(newStreet, newNumber, newLiteral, newFlat)) {
             throw new BadRequestException2(
-                            String.format(
-                                    "Адрес \"%s\" \"%s\" \"%s\" \"%s\" уже существует.",
-                                    (finalNewStreet.isEmpty() ? String.format(" \"%s\"", finalNewStreet) : ""),
-                                    (finalNewNumber != 0 ? String.format(" \"%s\"", finalNewNumber) : ""),
-                                    (!finalNewLiteral.isEmpty() ? String.format(" \"%s\"", finalNewLiteral) : ""),
-                                    (finalNewFlat != 0 ? String.format(" \"%s\"", finalNewFlat) : "")
-                            )
-                    );
+                    String.format(
+                            "Адрес \"%s\" \"%s\" \"%s\" \"%s\" уже существует.",
+                            (finalNewStreet.isEmpty() ? String.format(" \"%s\"", finalNewStreet) : ""),
+                            (finalNewNumber != 0 ? String.format(" \"%s\"", finalNewNumber) : ""),
+                            (!finalNewLiteral.isEmpty() ? String.format(" \"%s\"", finalNewLiteral) : ""),
+                            (finalNewFlat != 0 ? String.format(" \"%s\"", finalNewFlat) : "")
+                    )
+            );
         }
 
         handbookAddresses.setUpdatedAt(Instant.now());
@@ -143,6 +167,15 @@ public class HandbookAddressesController {
         return handbookAddressesDTOFactory.makeHandbookAddressesDTO(handbookAddresses);
     }
 
+    /**
+     * Получает все адреса с пагинацией и сортировкой.
+     *
+     * @param page номер страницы
+     * @param size размер страницы
+     * @param sortBy поля для сортировки
+     * @return список адресов в виде DTO
+     * @throws NotFoundException2 если адреса не найдены
+     */
     @GetMapping(GET_ALL_ADDRESSES)
     public List<HandbookAddressesDTO> getAllAddresses(
             @Valid
@@ -166,7 +199,17 @@ public class HandbookAddressesController {
                 .collect(Collectors.toList());
     }
 
-    @GetMapping(HandbookAddressesController.GET_STREETS)
+    /**
+     * Получает адреса по улице с пагинацией и сортировкой.
+     *
+     * @param street название улицы
+     * @param page номер страницы
+     * @param size размер страницы
+     * @param sortBy поля для сортировки
+     * @return список адресов в виде DTO
+     * @throws NotFoundException2 если адреса не найдены
+     */
+    @GetMapping(GET_STREETS)
     public List<HandbookAddressesDTO> getStreets(
             @Valid
             @PathVariable("street") String street,
@@ -184,18 +227,28 @@ public class HandbookAddressesController {
             throw new NotFoundException2(
                     String.format(
                             "Не найдено адресов для улицы \"%s\".",
-                            street
-                    )
+                            street )
             );
         }
 
         return addresses.stream()
                 .map(handbookAddressesDTOFactory::makeHandbookAddressesDTO)
                 .collect(Collectors.toList());
-
     }
 
-    @GetMapping(HandbookAddressesController.GET_ADDRESS)
+    /**
+     * Получает адрес по улице и номеру с пагинацией и сортировкой.
+     *
+     * @param street название улицы
+     * @param number номер дома
+     * @param literal литерал (необязательный)
+     * @param page номер страницы
+     * @param size размер страницы
+     * @param sortBy поля для сортировки
+     * @return список адресов в виде DTO
+     * @throws NotFoundException2 если адреса не найдены
+     */
+    @GetMapping(GET_ADDRESS)
     public List<HandbookAddressesDTO> getStreet(
             @Valid
             @PathVariable("street") String street,
@@ -225,6 +278,16 @@ public class HandbookAddressesController {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Удаляет адрес по улице и номеру.
+     *
+     * @param street название улицы
+     * @param number номер дома
+     * @param literal литерал (необязательный)
+     * @param flat номер квартиры (необязательный)
+     * @return ответ без содержимого
+     * @throws NotFoundException2 если адрес не найден
+     */
     @DeleteMapping(DELETE_ADDRESS)
     public ResponseEntity<HandbookAddressesDTO> deleteAddress(
             @Valid
@@ -252,7 +315,6 @@ public class HandbookAddressesController {
                         )
                 );
 
-
         handbookAddressesRepository.delete(handbookAddresses);
         System.out.println("Удален адрес: " + handbookAddresses.getStreet() + " " + handbookAddresses.getNumber() +
                 " " + handbookAddresses.getLiteral() + " " + handbookAddresses.getFlat());
@@ -260,6 +322,11 @@ public class HandbookAddressesController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Удаляет все адреса.
+     *
+     * @return ответ без содержимого
+     */
     @DeleteMapping(DELETE_ALL_ADDRESS)
     public ResponseEntity<HandbookAddressesDTO> deleteAllAddresses() {
 
@@ -269,9 +336,7 @@ public class HandbookAddressesController {
 
         return ResponseEntity.noContent().build();
     }
-
 }
-
 
 
 
