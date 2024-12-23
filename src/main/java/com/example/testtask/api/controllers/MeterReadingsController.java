@@ -58,7 +58,7 @@ public class MeterReadingsController {
      * @param readingsDate дата показаний
      * @param readings показания
      * @return созданные показания в виде DTO
-     * @throws BadRequestException2 если показания уже существуют
+     * @throws BadRequestException2 если показания уже существуют, если metersSerialNumber, readingsDate не удовлетворяют условиям
      */
     @PostMapping(CREATE_METER_READINGS)
     public MeterReadingsDTO createMeterReadingsNumber(
@@ -119,7 +119,7 @@ public class MeterReadingsController {
      * @param readingsDate дата показаний
      * @param newReadings новые показания
      * @return обновленные показания в виде DTO
-     * @throws NotFoundException2 если показания не найдены
+     * @throws NotFoundException2 если показания не найдены, если metersSerialNumber, readingsDate не удовлетворяют условиям
      */
     @PatchMapping(EDIT_METER_READINGS)
     public MeterReadingsDTO editMeterReadings(

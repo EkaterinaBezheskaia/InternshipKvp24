@@ -48,7 +48,7 @@ public class HandbookMeterTypesController {
      *
      * @param meterTypeTitle название типа прибора учета
      * @return созданный тип прибора учета в виде DTO
-     * @throws BadRequestException2 если тип уже существует
+     * @throws BadRequestException2 если тип уже существует, если meterTypeTitle не удовлетворяет условиям
      */
     @PostMapping(CREATE_METER_TYPE)
     public HandbookMeterTypesDTO createMeterType(
@@ -88,7 +88,7 @@ public class HandbookMeterTypesController {
      * @param newMeterTypeTitle новое название типа
      * @return обновленный тип прибора учета в виде DTO
      * @throws NotFoundException2 если тип не найден
-     * @throws BadRequestException2 если новый тип уже существует
+     * @throws BadRequestException2 если новый тип уже существует, если meterTypeTitle не удовлетворяет условиям
      */
     @PatchMapping(EDIT_METER_TYPE)
     public HandbookMeterTypesDTO editMeterType(

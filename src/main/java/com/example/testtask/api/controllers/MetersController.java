@@ -63,7 +63,8 @@ public class MetersController {
      * @param installationDate дата установки
      * @return созданный прибор учета в виде DTO
      * @throws BadRequestException2 если прибор учета уже существует
-     * @throws NotFoundException2 если адрес не найден
+     * @throws NotFoundException2 если адрес не найден, если metersSerialNumber, meterTypeTitle,
+     * installationDate не удовлетворяют условиям
      */
     @PostMapping(CREATE_METERS)
     public MetersDTO createMetersSerialNumber(
@@ -144,13 +145,22 @@ public class MetersController {
      * @param newMetersSerialNumber новый серийный номер
      * @return обновленный прибор учета в виде DTO
      * @throws NotFoundException2 если прибор учета не найден
-     * @throws BadRequestException2 если новый прибор учета уже существует
+     * @throws BadRequestException2 если новый прибор учета уже существует, если metersSerialNumber,
+     * newMetersSerialNumber не удовлетворяют условиям
      */
     @PatchMapping(EDIT_METERS)
     public MetersDTO editMeter(
             @Valid
             @PathVariable("metersSerialNumber") String metersSerialNumber,
             @RequestParam String newMetersSerialNumber) {
+
+        if (metersSerialNumber == null || metersSerialNumber.trim().isEmpty()) {
+            throw new BadRequestException2("Параметр 'metersSerialNumber' не должен быть пустым.");
+        }
+
+        if (newMetersSerialNumber == null || newMetersSerialNumber.trim().isEmpty()) {
+            throw new BadRequestException2("Параметр 'metersSerialNumber' не должен быть пустым.");
+        }
 
         MetersEntity meters = metersRepository
                 .findByMetersSerialNumber(metersSerialNumber)
@@ -190,7 +200,8 @@ public class MetersController {
      * @param newInstallationDate новая дата установки
      * @return обновленный прибор учета в виде DTO
      * @throws NotFoundException2 если прибор учета не найден
-     * @throws BadRequestException2 если новый прибор учета с данной датой уже существует
+     * @throws BadRequestException2 если новый прибор учета с данной датой уже существует, если metersSerialNumber,
+     * installationDate, newInstallationDate не удовлетворяют условиям
      */
     @PatchMapping(EDIT_DATE)
     public MetersDTO editDate(
@@ -198,6 +209,18 @@ public class MetersController {
             @PathVariable("metersSerialNumber") String metersSerialNumber,
             @PathVariable("installationDate") LocalDate installationDate,
             @RequestParam LocalDate newInstallationDate) {
+
+        if (metersSerialNumber == null || metersSerialNumber.trim().isEmpty()) {
+            throw new BadRequestException2("Параметр 'metersSerialNumber' не должен быть пустым.");
+        }
+
+        if (installationDate == null) {
+            throw new BadRequestException2("Параметр 'installationDate' не должен быть пустым.");
+        }
+
+        if (newInstallationDate == null) {
+            throw new BadRequestException2("Параметр 'installationDate' не должен быть пустым.");
+        }
 
         MetersEntity meters = metersRepository
                 .findByMetersSerialNumber(metersSerialNumber)

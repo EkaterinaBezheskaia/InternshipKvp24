@@ -52,7 +52,7 @@ public class HandbookAddressesController {
      * @param literal литерал (необязательный)
      * @param flat номер квартиры (необязательный)
      * @return созданный адрес в виде DTO
-     * @throws BadRequestException2 если адрес уже существует
+     * @throws BadRequestException2 если адрес уже существует, если параметры street, number, newNumber не удовлетворяют условиям
      */
     @PostMapping(CREATE_ADDRESS)
     public HandbookAddressesDTO createAddress(
@@ -114,7 +114,7 @@ public class HandbookAddressesController {
      * @param newFlat новый номер квартиры (необязательный)
      * @return обновленный адрес в виде DTO
      * @throws NotFoundException2 если адрес не найден
-     * @throws BadRequestException2 если новый адрес уже существует
+     * @throws BadRequestException2 если новый адрес уже существует, если параметры street, number, newNumber не удовлетворяют условиям
      */
     @PatchMapping(EDIT_ADDRESS)
     public HandbookAddressesDTO editAddress(
