@@ -24,20 +24,19 @@ public class MetersDTO {
     /**
      * Уникальный идентификатор прибора учета.
      */
-    @NotNull(message = "ID не должен быть пустым")
     Long id;
 
     /**
      * Серийный номер прибора учета.
      */
-    @NotNull(message = "Серийный номер прибора не должен быть пустым")
+    //@NotNull(message = "Серийный номер прибора не должен быть пустым")
     @Size(max = 100, message = "Серийный номер прибора не должен превышать 100 символов")
     String metersSerialNumber;
 
     /**
      * Дата установки прибора учета.
      */
-    @NotNull(message = "Дата установки прибора не должна быть пустой")
+    //@NotNull(message = "Дата установки прибора не должна быть пустой")
     LocalDate installationDate;
 
     /**
@@ -56,6 +55,8 @@ public class MetersDTO {
     /**
      * Дата и время последнего обновления записи о приборе учета.
      */
-    @NonNull
+
     Instant updatedAt = Instant.now();
+
+
 }

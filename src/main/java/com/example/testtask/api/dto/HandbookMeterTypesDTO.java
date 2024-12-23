@@ -24,13 +24,12 @@ public class HandbookMeterTypesDTO {
     /**
      * Уникальный идентификатор типа прибора.
      */
-    @NotNull(message = "ID не должен быть пустым")
     Long id;
 
     /**
      * Название типа прибора учета.
      */
-    @NotNull(message = "Название типа прибора не должно быть пустым")
+    //@NotNull(message = "Название типа прибора не должно быть пустым")
     @Size(max = 100, message = "Название типа прибора не должно превышать 100 символов")
     @Pattern(regexp ="^[А-Я].+", message = "Должно начинаться с заглавной буквы.")
     String meterTypeTitle;

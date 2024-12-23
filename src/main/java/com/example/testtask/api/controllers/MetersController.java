@@ -5,8 +5,10 @@ import com.example.testtask.api.exceptions.BadRequestException2;
 import com.example.testtask.api.exceptions.NotFoundException2;
 import com.example.testtask.api.factories.MetersDTOFactory;
 import com.example.testtask.store.entities.HandbookAddressesEntity;
+import com.example.testtask.store.entities.HandbookMeterTypesEntity;
 import com.example.testtask.store.entities.MetersEntity;
 import com.example.testtask.store.repositories.HandbookAddressesRepository;
+import com.example.testtask.store.repositories.HandbookMeterTypesRepository;
 import com.example.testtask.store.repositories.MetersRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -40,6 +42,7 @@ public class MetersController {
     MetersRepository metersRepository;
     MetersDTOFactory metersDTOFactory;
     HandbookAddressesRepository handbookAddressesRepository;
+    HandbookMeterTypesRepository handbookMeterTypesRepository;
 
     public static final String CREATE_METERS = "/api/meters";
     public static final String EDIT_METERS = "/api/meters/{metersSerialNumber}";
@@ -47,7 +50,7 @@ public class MetersController {
     public static final String GET_ALL_METERS = "/api/meters";
     public static final String GET_METER = "/api/meters/{metersSerialNumber}";
     public static final String DELETE_METER = "/api/meters/{metersSerialNumber}";
-    public static final String DELETE_ALL_METERS = "/api/meters";
+    public static final String DELETE_ALL_METERS = "/api/meters/reset";
 
     /**
      * Создает новый прибор учета.
@@ -67,10 +70,23 @@ public class MetersController {
             @Valid
             @RequestParam String metersSerialNumber,
             @RequestParam String street,
-            @RequestParam int number,
+            @RequestParam Integer number,
             @RequestParam(required=false) String literal,
-            @RequestParam(required=false) int flat,
-            @RequestParam LocalDate installationDate) {
+            @RequestParam(required=false) Integer flat,
+            @RequestParam LocalDate installationDate,
+            @RequestParam String meterTypeTitle) {
+
+        if (metersSerialNumber == null || metersSerialNumber.trim().isEmpty()) {
+            throw new BadRequestException2("Параметр 'metersSerialNumber' не должен быть пустым.");
+        }
+
+        if (meterTypeTitle == null || meterTypeTitle.trim().isEmpty()) {
+            throw new BadRequestException2("Параметр 'meterTypeTitle' не должен быть пустым.");
+        }
+
+        if (installationDate == null) {
+            throw new BadRequestException2("Параметр 'installationDate' не должен быть пустым.");
+        }
 
         metersRepository
                 .findByMetersSerialNumber(metersSerialNumber)
@@ -94,14 +110,22 @@ public class MetersController {
                 .orElseThrow(() -> new NotFoundException2(
                         String.format(
                                 "Адрес \"%s\" \"%s\"%s%s не существует.",
-                                street, number,
-                                (!finalLiteral.isEmpty() ? String.format(" \"%s\"", finalLiteral) : ""),
-                                (finalFlat != 0 ? String.format(" \"%s\"", finalFlat) : "")
+                                street, number, finalLiteral, finalFlat
+                        )
+                ));
+
+        HandbookMeterTypesEntity type = handbookMeterTypesRepository
+                .findByMeterTypeTitle(meterTypeTitle)
+                .orElseThrow(() -> new NotFoundException2(
+                        String.format(
+                                "Адрес \"%s\" не существует.",
+                                meterTypeTitle
                         )
                 ));
 
         MetersEntity meters = metersRepository.saveAndFlush(
                 MetersEntity.builder()
+                        .type(type)
                         .metersSerialNumber(metersSerialNumber)
                         .address(address)
                         .installationDate(installationDate)
@@ -270,8 +294,6 @@ public class MetersController {
                                 )
                         )
                 );
-
-        System.out.println("Found Meter: " + meters.getMetersSerialNumber());
 
         return metersDTOFactory.makeMetersDTO(meters);
     }

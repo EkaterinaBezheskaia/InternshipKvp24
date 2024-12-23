@@ -25,13 +25,11 @@ public class HandbookAddressesDTO {
     /**
      * Уникальный идентификатор адреса.
      */
-    @NotNull(message = "ID не должен быть пустым")
     Long id;
 
     /**
      * Название улицы.
      */
-    @NotNull(message = "Улица не должна быть пустой")
     @Size(max = 100, message = "Название улицы не должно превышать 100 символов")
     @Pattern(regexp ="^[А-Я].+", message = "Должно начинаться с заглавной буквы.")
     String street;
@@ -39,9 +37,8 @@ public class HandbookAddressesDTO {
     /**
      * Номер дома.
      */
-    @NotNull(message = "Номер не должен быть пустым")
     @Min(value = 0, message = "Номер дома должен быть положительным")
-    int number;
+    Integer number;
 
     /**
      * Литерал адреса (необязательный).
@@ -54,7 +51,7 @@ public class HandbookAddressesDTO {
      * Номер квартиры (необязательный).
      */
     @Min(value = 0, message = "Номер квартиры должен быть положительным")
-    int flat;
+    Integer flat;
 
     /**
      * Дата и время создания адреса.

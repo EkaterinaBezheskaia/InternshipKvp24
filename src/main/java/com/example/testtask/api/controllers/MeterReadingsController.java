@@ -7,6 +7,7 @@ import com.example.testtask.api.factories.MeterReadingsDTOFactory;
 import com.example.testtask.store.entities.MeterReadingsEntity;
 import com.example.testtask.store.entities.MetersEntity;
 import com.example.testtask.store.repositories.MeterReadingsRepository;
+import com.example.testtask.store.repositories.MetersRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Digits;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -40,18 +42,19 @@ public class MeterReadingsController {
 
     MeterReadingsRepository meterReadingsRepository;
     MeterReadingsDTOFactory meterReadingsDTOFactory;
+    MetersRepository metersRepository;
 
-    public static final String CREATE_METER_READINGS = "/api/meterReadings/{meter}/{readingsDate}";
-    public static final String EDIT_METER_READINGS = "/api/meterReadings/{meter}/{readingsDate}";
-    public static final String GET_ALL_METER_READINGS = "/api/meterReadings/{meter}";
-    public static final String GET_METER_READINGS = "/api/meterReadings/{meter}/{readingsDate}";
-    public static final String DELETE_METER_READINGS = "/api/meterReadings/{meter}/{readingsDate}";
+    public static final String CREATE_METER_READINGS = "/api/meterReadings/{metersSerialNumber}/{readingsDate}";
+    public static final String EDIT_METER_READINGS = "/api/meterReadings/{metersSerialNumber}/{readingsDate}";
+    public static final String GET_ALL_METER_READINGS = "/api/meterReadings/{metersSerialNumber}";
+    public static final String GET_METER_READINGS = "/api/meterReadings/{metersSerialNumber}/{readingsDate}";
+    public static final String DELETE_METER_READINGS = "/api/meterReadings/{metersSerialNumber}/{readingsDate}";
     public static final String DELETE_ALL_METER_READINGS = "/api/meterReadings/reset";
 
     /**
      * Создает новые показания для прибора учета.
      *
-     * @param meter прибор учета
+     * @param metersSerialNumber прибор учета
      * @param readingsDate дата показаний
      * @param readings показания
      * @return созданные показания в виде DTO
@@ -60,17 +63,36 @@ public class MeterReadingsController {
     @PostMapping(CREATE_METER_READINGS)
     public MeterReadingsDTO createMeterReadingsNumber(
             @Valid
-            @PathVariable("meter") MetersEntity meter,
+            @PathVariable("metersSerialNumber") String metersSerialNumber,
             @PathVariable("readingsDate") Month readingsDate,
             @RequestParam BigDecimal readings) {
 
+        if (metersSerialNumber == null || metersSerialNumber.trim().isEmpty()) {
+            throw new BadRequestException2("Параметр 'metersSerialNumber' не должен быть пустым.");
+        }
+
+        if (readingsDate == null) {
+            throw new BadRequestException2("Параметр 'readingsDate' не должен быть пустым.");
+        }
+
+        MetersEntity meter = metersRepository
+                .findByMetersSerialNumber(metersSerialNumber)
+                .orElseThrow(() ->
+                        new NotFoundException2(
+                                String.format(
+                                        "Прибор учета с серийным номером \"%s\" не существует.",
+                                        metersSerialNumber
+                                )
+                        )
+                );
+
         meterReadingsRepository
-                .findByMeterAndReadingsDate(meter, readingsDate)
-                .ifPresent(meterReadings -> {
+                .findByMeter_MetersSerialNumberAndReadingsDate(metersSerialNumber, readingsDate)
+                .ifPresent(existingReadings -> {
                     throw new BadRequestException2(
                             String.format(
                                     "Показания прибора \"%s\" за период \"%s\" уже существуют.",
-                                    meter, readingsDate
+                                    metersSerialNumber, readingsDate
                             )
                     );
                 });
@@ -79,6 +101,7 @@ public class MeterReadingsController {
 
         MeterReadingsEntity meterReadings = meterReadingsRepository.saveAndFlush(
                 MeterReadingsEntity.builder()
+                        .meter(meter)
                         .readingsDate(readingsDate)
                         .readings(roundedReadings) // Используем округленное значение
                         .updatedAt(Instant.now())
@@ -92,32 +115,63 @@ public class MeterReadingsController {
     /**
      * Обновляет существующие показания прибора учета.
      *
-     * @param meter прибор учета
+     * @param metersSerialNumber прибор учета
      * @param readingsDate дата показаний
-     * @param readings новые показания
+     * @param newReadings новые показания
      * @return обновленные показания в виде DTO
      * @throws NotFoundException2 если показания не найдены
      */
     @PatchMapping(EDIT_METER_READINGS)
     public MeterReadingsDTO editMeterReadings(
             @Valid
-            @PathVariable("meter") MetersEntity meter,
+            @PathVariable("metersSerialNumber") String metersSerialNumber,
             @PathVariable("readingsDate") Month readingsDate,
-            @RequestParam BigDecimal readings) {
+            @RequestParam BigDecimal newReadings) {
 
-        MeterReadingsEntity meterReadings = meterReadingsRepository
-                .findByMeterAndReadingsDate(meter, readingsDate)
+        if (metersSerialNumber == null || metersSerialNumber.trim().isEmpty()) {
+            throw new BadRequestException2("Параметр 'metersSerialNumber' не должен быть пустым.");
+        }
+
+        if (readingsDate == null) {
+            throw new BadRequestException2("Параметр 'readingsDate' не должен быть пустым.");
+        }
+
+        MetersEntity meter = metersRepository
+                .findByMetersSerialNumber(metersSerialNumber)
                 .orElseThrow(() ->
                         new NotFoundException2(
                                 String.format(
-                                        "Показания прибора \"%s\" за период \"%s\" не существуют.",
-                                        meter, readingsDate
+                                        "Прибор учета с серийным номером \"%s\" не существует.",
+                                        metersSerialNumber
                                 )
                         )
                 );
 
+        MeterReadingsEntity meterReadings = meterReadingsRepository
+                .findByMeter_MetersSerialNumberAndReadingsDate(metersSerialNumber, readingsDate)
+                .orElseThrow(() ->
+                        new NotFoundException2(
+                                String.format(
+                                        "Показания прибора \"%s\" за период \"%s\" не существуют.",
+                                        metersSerialNumber, readingsDate
+                                )
+                        )
+                );
+
+        meterReadingsRepository
+                .findByMeter_MetersSerialNumberAndReadingsAndReadingsDate(metersSerialNumber, newReadings, readingsDate)
+                .ifPresent(existingReadings -> {
+                    throw new BadRequestException2(
+                            String.format(
+                                    "Показания прибора: \"%s\" с серийным номером \"%s\" за период \"%s\" уже существуют.",
+                                    newReadings, metersSerialNumber, readingsDate
+                            )
+                    );
+                });
+
+
         meterReadings.setUpdatedAt(Instant.now());
-        meterReadings.setReadings(readings);
+        meterReadings.setReadings(newReadings);
 
         meterReadings = meterReadingsRepository.saveAndFlush(meterReadings);
 
@@ -127,7 +181,7 @@ public class MeterReadingsController {
     /**
      * Получает все показания для прибора учета с пагинацией.
      *
-     * @param meter прибор учета
+     * @param metersSerialNumber прибор учета
      * @param sortBy поля для сортировки
      * @param page номер страницы
      * @param size размер страницы
@@ -137,15 +191,28 @@ public class MeterReadingsController {
     @GetMapping(GET_ALL_METER_READINGS)
     public List<MeterReadingsDTO> getMeterReadings(
             @Valid
-            @PathVariable("meter") MetersEntity meter,
-            @RequestParam("readings") Long[] sortBy,
+            @PathVariable("metersSerialNumber") String metersSerialNumber,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "readingsDate") String[] sortBy) {
+
+
+        MetersEntity meter = metersRepository
+                .findByMetersSerialNumber(metersSerialNumber)
+                .orElseThrow(() ->
+                        new NotFoundException2(
+                                String.format(
+                                        "Прибор учета с серийным номером \"%s\" не существует.",
+                                        metersSerialNumber
+                                )
+                        )
+                );
 
         Sort sort = Sort.by(Arrays.toString(sortBy)).ascending();
+        Pageable pageable = PageRequest.of(page, size);
 
-        Page<MeterReadingsEntity> allReadings = meterReadingsRepository
-                .findAll(PageRequest.of(page, size, sort));
+        List<MeterReadingsEntity> allReadings = meterReadingsRepository
+                .findByMeter_MetersSerialNumberOrderByReadingsDateAsc(metersSerialNumber, pageable);
 
         if (allReadings.isEmpty()) {
             throw new NotFoundException2(
@@ -161,7 +228,7 @@ public class MeterReadingsController {
     /**
      * Получает показания прибора учета по дате.
      *
-     * @param meter прибор учета
+     * @param metersSerialNumber прибор учета
      * @param readingsDate дата показаний
      * @return показания в виде DTO
      * @throws NotFoundException2 если показания не найдены
@@ -169,16 +236,27 @@ public class MeterReadingsController {
     @GetMapping(GET_METER_READINGS)
     public MeterReadingsDTO getMeterReadings(
             @Valid
-            @PathVariable("meter") MetersEntity meter,
+            @PathVariable("metersSerialNumber") String metersSerialNumber,
             @PathVariable("readingsDate") Month readingsDate) {
 
+        MetersEntity meter = metersRepository
+                .findByMetersSerialNumber(metersSerialNumber)
+                .orElseThrow(() ->
+                        new NotFoundException2(
+                                String.format(
+                                        "Прибор учета с серийным номером \"%s\" не существует.",
+                                        metersSerialNumber
+                                )
+                        )
+                );
+
         MeterReadingsEntity meterReadings = meterReadingsRepository
-                .findByMeterAndReadingsDate(meter, readingsDate)
+                .findByMeter_MetersSerialNumberAndReadingsDate(metersSerialNumber, readingsDate)
                 .orElseThrow(() ->
                         new NotFoundException2(
                                 String.format(
                                         "Показания прибора \"%s\" за период \"%s\" не существуют",
-                                        meter, readingsDate
+                                        metersSerialNumber, readingsDate
                                 )
                         )
                 );
@@ -189,7 +267,7 @@ public class MeterReadingsController {
     /**
      * Удаляет показания прибора учета по дате.
      *
-     * @param meter прибор учета
+     * @param metersSerialNumber прибор учета
      * @param readingsDate дата показаний
      * @param readings показания
      * @return ответ без содержимого
@@ -198,17 +276,28 @@ public class MeterReadingsController {
     @DeleteMapping(DELETE_METER_READINGS)
     public ResponseEntity<MeterReadingsDTO> deleteMeterReadings(
             @Valid
-            @PathVariable("meter") MetersEntity meter,
+            @PathVariable("metersSerialNumber") String metersSerialNumber,
             @PathVariable("readingsDate") Month readingsDate,
-            @RequestParam BigDecimal readings) {
+            @RequestParam(required = false) BigDecimal readings) {
+
+        MetersEntity meter = metersRepository
+                .findByMetersSerialNumber(metersSerialNumber)
+                .orElseThrow(() ->
+                        new NotFoundException2(
+                                String.format(
+                                        "Прибор учета с серийным номером \"%s\" не существует.",
+                                        metersSerialNumber
+                                )
+                        )
+                );
 
         MeterReadingsEntity meterReadings = meterReadingsRepository
-                .findByMeterAndReadingsDate(meter, readingsDate)
+                .findByMeter_MetersSerialNumberAndReadingsDate(metersSerialNumber, readingsDate)
                 .orElseThrow(() ->
                         new NotFoundException2(
                                 String.format(
                                         "Показания прибора \"%s\" за период \"%s\" не существуют.",
-                                        meter, readingsDate
+                                        metersSerialNumber, readingsDate
                                 )
                         )
                 );

@@ -4,10 +4,13 @@ import com.example.testtask.store.entities.MeterReadingsEntity;
 import com.example.testtask.store.entities.MetersEntity;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.math.BigDecimal;
 import java.time.Month;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -38,9 +41,13 @@ public interface MeterReadingsRepository extends JpaRepository<MeterReadingsEnti
     /**
      * Находит показания прибора учета по прибору и дате показаний.
      *
-     * @param meter прибор учета
+     * @param metersSerialNumber прибор учета
      * @param readingsDate дата показаний
      * @return Optional с найденными показаниями или пустой Optional, если показания не найдены
      */
-    Optional<MeterReadingsEntity> findByMeterAndReadingsDate(MetersEntity meter, Month readingsDate);
+    Optional<MeterReadingsEntity> findByMeter_MetersSerialNumberAndReadingsDate(String metersSerialNumber, Month readingsDate);
+
+    Optional<Object> findByMeter_MetersSerialNumberAndReadingsAndReadingsDate(String metersSerialNumber, BigDecimal newReadings, Month readingsDate);
+
+    List<MeterReadingsEntity> findByMeter_MetersSerialNumberOrderByReadingsDateAsc(String metersSerialNumber, Pageable pageable);
 }

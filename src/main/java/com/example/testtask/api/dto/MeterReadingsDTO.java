@@ -25,20 +25,19 @@ public class MeterReadingsDTO {
     /**
      * Уникальный идентификатор показаний.
      */
-    @NotNull(message = "ID не должен быть пустым")
     Long id;
 
     /**
      * Дата показаний.
      */
-    @NotNull(message = "Значение не должно быть пустым")
+    //@NotNull(message = "Значение не должно быть пустым")
     Month readingsDate;
 
     /**
      * Значение показаний прибора.
      * Должно быть в формате 0.001 с максимум 10 целыми и 3 дробными цифрами.
      */
-    @NotNull(message = "Значение не должно быть пустым")
+    //@NotNull(message = "Значение не должно быть пустым")
     @Digits(integer = 10, fraction = 3, message = "Значение должно быть в формате 0.001")
     BigDecimal readings;
 

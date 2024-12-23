@@ -48,7 +48,7 @@ public interface HandbookAddressesRepository extends JpaRepository<HandbookAddre
      * @param pageable объект, содержащий информацию о пагинации
      * @return список адресов
      */
-    List<HandbookAddressesEntity> findByStreetOrderByNumberAsc(String street, Pageable pageable);
+    List<HandbookAddressesEntity> findByStreetOrderByNumberAscLiteralAscNumberAsc(String street, Pageable pageable);
 
     /**
      * Находит адреса по улице и номеру, сортируя их по литералу и квартире в порядке возрастания.
@@ -76,4 +76,6 @@ public interface HandbookAddressesRepository extends JpaRepository<HandbookAddre
             "AND (:literal IS NULL OR a.literal = :literal) " +
             "AND (:flat IS NULL OR a.flat = :flat)")
     boolean existsByStreetAndNumberAndLiteralAndFlat(String street, Integer number, String literal, Integer flat);
+
+
 }

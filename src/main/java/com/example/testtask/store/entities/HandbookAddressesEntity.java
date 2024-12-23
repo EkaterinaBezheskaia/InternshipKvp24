@@ -26,7 +26,7 @@ public class HandbookAddressesEntity extends HandbookAddressesDTO {
      * Уникальный идентификатор адреса.
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "column_0_id")
     private Long id;
 
@@ -40,7 +40,7 @@ public class HandbookAddressesEntity extends HandbookAddressesDTO {
      * Номер дома.
      */
     @Column(name = "column_2_number", nullable = false)
-    private int number;
+    private Integer number;
 
     /**
      * Литерал адреса (необязательный).
@@ -52,7 +52,7 @@ public class HandbookAddressesEntity extends HandbookAddressesDTO {
      * Номер квартиры (необязательный).
      */
     @Column(name = "column_4_flat")
-    private int flat;
+    private Integer flat;
 
     /**
      * Дата и время создания адреса.
@@ -70,7 +70,7 @@ public class HandbookAddressesEntity extends HandbookAddressesDTO {
      * Дата и время последнего обновления адреса.
      */
     @Column(name = "column_7_updated_date")
-    Instant updatedAt = Instant.now();
+    private Instant updatedAt = Instant.now();
 
     /**
      * Список приборов учета, связанных с данным адресом.

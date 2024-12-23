@@ -55,6 +55,10 @@ public class HandbookMeterTypesController {
             @Valid
             @RequestParam String meterTypeTitle) {
 
+        if (meterTypeTitle == null || meterTypeTitle.trim().isEmpty()) {
+            throw new BadRequestException2("Параметр 'meterTypeTitle' не должен быть пустым.");
+        }
+
         handbookMeterTypesRepository
                 .findByMeterTypeTitle(meterTypeTitle)
                 .ifPresent(existingType -> {
@@ -91,6 +95,10 @@ public class HandbookMeterTypesController {
             @Valid
             @PathVariable("meterTypeTitle") String meterTypeTitle,
             @RequestParam String newMeterTypeTitle) {
+
+        if (meterTypeTitle == null || meterTypeTitle.trim().isEmpty()) {
+            throw new BadRequestException2("Параметр 'meterTypeTitle' не должен быть пустым.");
+        }
 
         HandbookMeterTypesEntity meterType = handbookMeterTypesRepository
                 .findByMeterTypeTitle(meterTypeTitle)
@@ -136,7 +144,7 @@ public class HandbookMeterTypesController {
             @Valid
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "title") String sortBy) {
+            @RequestParam(defaultValue = "meterTypeTitle") String sortBy) {
 
         Sort sort = Sort.by(sortBy).ascending();
 
