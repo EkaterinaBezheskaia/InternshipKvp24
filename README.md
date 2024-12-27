@@ -81,11 +81,11 @@ mvn spring-boot:run
 
 1.5. Удалить адрес:
 
-DELETE /api/addresses/{street}/{number}```
+```DELETE /api/addresses/{street}/{number}```
 
 1.6. Удалить все адреса:
 
-DELETE /api/addresses/reset```
+```DELETE /api/addresses/reset```
 
 2. Типы приборов учета
 
