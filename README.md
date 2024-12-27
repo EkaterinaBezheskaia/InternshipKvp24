@@ -68,12 +68,12 @@ mvn spring-boot:run
 1.2. Редактировать адрес:
 
 ```PATCH /api/addresses/{street}/{number}```
-Параметры: newStreet, newNumber, newLiteral, newFlat
+Параметры: literal, flat, newStreet, newNumber, newLiteral, newFlat
 
 1.3. Получить все адреса:
 
 ```GET /api/addresses```
-Параметры: page, size, sortBy
+Параметры: page, size
 
 1.4. Получить адрес по улице и номеру:
 
@@ -102,7 +102,7 @@ mvn spring-boot:run
 2.3. Получить все типы приборов учета:
 
 ```GET /api/meterTypes```
-Параметры: page, size, sortBy
+Параметры: page, size
 
 2.4. Получить тип прибора учета по названию:
 
